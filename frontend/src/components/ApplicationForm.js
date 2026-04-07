@@ -195,16 +195,15 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
         name: '',
         nameKana: '',
         address: '',
-        phone: '',
+        homePhone: '',
+        mobilePhone: '',
         relationship: ''
       },
-      agencyInfo: {
-        storeName: '',
-        storeCode: '',
-        agentName: '',
-        agentCode: '',
+      agentInfo: {
+        name: '',
         phone: '',
-        email: ''
+        code: '',
+        representativeName: ''
       },
       remarks: ''
     });
