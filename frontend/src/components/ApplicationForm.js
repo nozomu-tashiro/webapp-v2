@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/ApplicationForm.css';
-import { saveApplication, updateApplication, getApplicationsByAgent, checkDuplicate } from '../utils/indexedDB';
+import { saveApplication, updateApplication } from '../utils/indexedDB';
 import { getCurrentUser } from '../utils/auth';
 
 const ApplicationForm = ({ editMode = false, editData = null, editingId = null, onSaveComplete = null }) => {

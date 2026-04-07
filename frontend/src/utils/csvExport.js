@@ -95,7 +95,6 @@ export const convertToCSV = (applications, agentCode, agentName) => {
         const endDate = new Date(startDate);
         endDate.setFullYear(endDate.getFullYear() + 2);
         endDate.setMonth(endDate.getMonth() - 1);
-        const endDateStr = endDate.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit' });
         servicePeriod = `西暦${startDate.getFullYear()}年${String(startDate.getMonth() + 1).padStart(2, '0')}月${String(startDate.getDate()).padStart(2, '0')}日 から 2年後応当月の月末まで`;
       }
     }

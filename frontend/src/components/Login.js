@@ -141,9 +141,9 @@ const Login = ({ onLoginSuccess }) => {
           </button>
 
           <div className="login-help">
-            <a href="#" className="forgot-pin-link">
+            <button type="button" className="forgot-pin-link" onClick={(e) => e.preventDefault()}>
               PINを忘れた方はこちら →
-            </a>
+            </button>
           </div>
         </form>
       </div>

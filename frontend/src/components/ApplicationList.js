@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {
   getApplicationsByAgent,
   deleteApplication,
-  getApplicationCount,
   markAllAsSubmitted
 } from '../utils/indexedDB';
 import { getCurrentUser } from '../utils/auth';
-import { convertToCSV, downloadCSV, sendCSVByEmail } from '../utils/csvExport';
+import { convertToCSV, downloadCSV } from '../utils/csvExport';
 import '../styles/ApplicationList.css';
 
 const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
@@ -44,7 +43,7 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
     return () => {
       window.removeEventListener('applicationSaved', handleApplicationSaved);
     };
-  }, []);
+  }, [loadApplications]);
 
   // 全選択/全解除
   const handleSelectAll = (e) => {
@@ -478,17 +477,6 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
       )}
     </div>
   );
-};
-
-// 商品名を表示用に変換
-const getProductDisplayName = (productId) => {
-  const products = {
-    'anshin-support-24': 'あんしんサポート24',
-    'home-assist-24': 'ホームアシスト24',
-    'anshin-full-support': 'あんしんフルサポート',
-    'ierabu-anshin-support': 'いえらぶ安心サポート'
-  };
-  return products[productId] || productId;
 };
 
 export default ApplicationList;
