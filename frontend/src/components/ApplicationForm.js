@@ -159,14 +159,15 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       return false;
     }
     
-    // 販売店コード形式チェック（XX-XX-XXXXXXXX または XX-XX-XXXXXXXX-XXX）
+    // 販売店コード形式チェック（XX-XX-最大10桁-XXX または XX-XX-最大10桁）
     const agentCode = formData.agentInfo.code;
     if (agentCode) {
-      // 端末番号付き（13-00-11223366-000）または端末番号なし（13-00-11223366）のどちらも許可
-      const validPattern = /^\d{2}-\d{2}-\d{8}(-\d{3})?$/;
+      // 端末番号付き（13-00-1122336600-000）または端末番号なし（13-00-1122336600）のどちらも許可
+      // 2桁-2桁-1～10桁-3桁 または 2桁-2桁-1～10桁
+      const validPattern = /^\d{2}-\d{2}-\d{1,10}(-\d{3})?$/;
       
       if (!validPattern.test(agentCode)) {
-        const errorMsg = '販売店コードの形式が正しくありません。\n正しい形式: XX-XX-XXXXXXXX または XX-XX-XXXXXXXX-XXX\n（例: 13-00-11223366 または 13-00-11223366-000）';
+        const errorMsg = '販売店コードの形式が正しくありません。\n正しい形式: XX-XX-最大10桁 または XX-XX-最大10桁-XXX\n（例: 13-00-1122336600 または 13-00-1122336600-000）';
         setError(errorMsg);
         alert(errorMsg);
         console.error('Validation failed:', errorMsg);
@@ -602,11 +603,11 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 handleNestedChange('agentInfo', 'code', code);
               }}
               className="form-input"
-              placeholder="13-00-11223366（端末番号は自動削除されます）"
+              placeholder="13-00-0000000000-000（端末番号は自動削除されます）"
             />
-            {formData.agentInfo.code && !/^\d{2}-\d{2}-\d{8}$/.test(formData.agentInfo.code) && (
+            {formData.agentInfo.code && !/^\d{2}-\d{2}-\d{1,10}(-\d{3})?$/.test(formData.agentInfo.code) && (
               <div className="warning-message">
-                ⚠️ 形式が正しくありません。正しい形式: XX-XX-XXXXXXXX（例: 13-00-11223366）
+                ⚠️ 形式が正しくありません。正しい形式: XX-XX-最大10桁-XXX（例: 13-00-0000000000-000）
               </div>
             )}
           </div>
