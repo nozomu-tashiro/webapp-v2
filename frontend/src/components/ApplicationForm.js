@@ -306,7 +306,7 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
         
         // onSaveCompleteコールバックがあれば実行
         if (onSaveComplete) {
-          onSaveComplete(savedId);
+          onSaveComplete(result.id);
         }
       } catch (saveError) {
         console.error('Failed to save data to IndexedDB:', saveError);
