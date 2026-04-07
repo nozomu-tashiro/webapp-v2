@@ -9,84 +9,157 @@ export const convertToCSV = (applications, agentCode, agentName) => {
     return null;
   }
   
-  // CSVヘッダー
+  // CSVヘッダー（画面の入力順に完全一致）
   const headers = [
+    // 代理店情報
     '代理店コード',
     '代理店名',
     '登録日時',
+    
+    // 商品・サービス選択
     '商品ラインナップ',
     '支払方法',
-    'お申込者様名',
-    'フリガナ',
-    '携帯番号',
-    '固定番号',
-    '生年月日',
-    '性別',
-    '物件住所',
-    '物件名',
-    '物件名フリガナ',
-    '号室',
-    'サービス提供価格',
+    'サービス提供価格（円/税込）/毎月',
+    'オプション1_近隣トラブル解決支援サービス',
+    'オプション2_シニア向け総合見守りサービス',
+    'オプション3_家電の安心サポート',
     '保証番号',
+    
+    // 販売店情報
+    '販売店名',
+    '販売店電話番号',
+    '販売店コード',
+    '販売店担当者名',
+    
+    // 対象物件情報
+    '対象物件住所',
+    '対象物件名',
+    '対象物件名フリガナ',
+    '対象物件号室',
+    
+    // 申込基本情報
+    'お申込者様名',
+    'お申込者様フリガナ',
+    'お申込者様携帯番号',
+    'お申込者様固定番号',
+    'お申込者様生年月日',
+    'お申込者様性別',
+    
+    // サービス期間
     'サービス期間開始日',
-    '緊急連絡先名',
-    '緊急連絡先続柄',
-    '緊急連絡先電話番号',
-    '代理店情報_販売店名',
-    '代理店情報_電話番号',
-    '代理店情報_担当者名',
-    '申込日',
-    '入居者1_氏名',
+    'サービス期間（自動計算）',
+    
+    // 入居者・同居人情報
+    '入居者1_お名前',
     '入居者1_フリガナ',
     '入居者1_続柄',
-    '入居者1_生年月日',
-    '入居者2_氏名',
+    '入居者2_お名前',
     '入居者2_フリガナ',
     '入居者2_続柄',
-    '入居者2_生年月日',
-    'オプションサービス'
+    '入居者3_お名前',
+    '入居者3_フリガナ',
+    '入居者3_続柄',
+    
+    // 緊急連絡先
+    '緊急連絡先_お名前',
+    '緊急連絡先_フリガナ',
+    '緊急連絡先_住所',
+    '緊急連絡先_固定電話',
+    '緊急連絡先_携帯電話',
+    '緊急連絡先_続柄',
+    
+    // その他
+    '申込日'
   ];
   
   // CSVデータ行
   const rows = applications.map(app => {
     const data = app.formData;
     const residents = data.residents || [];
+    const emergency = data.emergencyContact || {};
+    const agent = data.agentInfo || {};
+    
+    // オプションサービスの有無をチェック
+    const options = data.selectedOptions || [];
+    const hasNeighborTrouble = options.includes('neighbor-trouble') ? '○' : '';
+    const hasSeniorWatch = options.includes('senior-watch') ? '○' : '';
+    const hasApplianceSupport = options.includes('appliance-support') ? '○' : '';
+    
+    // サービス期間の自動計算
+    let servicePeriod = '';
+    if (data.servicePeriodStartDate && data.paymentMethod) {
+      const startDate = new Date(data.servicePeriodStartDate);
+      if (data.paymentMethod === 'monthly') {
+        servicePeriod = '月払（期間指定なし）';
+      } else if (data.paymentMethod.startsWith('yearly')) {
+        const endDate = new Date(startDate);
+        endDate.setFullYear(endDate.getFullYear() + 2);
+        endDate.setMonth(endDate.getMonth() - 1);
+        const endDateStr = endDate.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit' });
+        servicePeriod = `西暦${startDate.getFullYear()}年${String(startDate.getMonth() + 1).padStart(2, '0')}月${String(startDate.getDate()).padStart(2, '0')}日 から 2年後応当月の月末まで`;
+      }
+    }
     
     return [
+      // 代理店情報
       agentCode,
       agentName,
       new Date(app.timestamp).toLocaleString('ja-JP'),
+      
+      // 商品・サービス選択
       getProductName(data.selectedProduct),
       getPaymentMethodName(data.paymentMethod),
+      data.servicePrice || '',
+      hasNeighborTrouble,
+      hasSeniorWatch,
+      hasApplianceSupport,
+      data.guaranteeNumber || '',
+      
+      // 販売店情報
+      agent.name || '',
+      agent.phone || '',
+      agent.code || '',
+      agent.representativeName || '',
+      
+      // 対象物件情報
+      data.propertyAddress || '',
+      data.propertyName || '',
+      data.propertyNameKana || '',
+      data.roomNumber || '',
+      
+      // 申込基本情報
       data.applicantName || '',
       data.applicantNameKana || '',
       data.mobilePhone || '',
       data.homePhone || '',
       data.birthDate || '',
       data.gender === 'male' ? '男性' : data.gender === 'female' ? '女性' : '',
-      data.propertyAddress || '',
-      data.propertyName || '',
-      data.propertyNameKana || '',
-      data.roomNumber || '',
-      data.servicePrice || '',
-      data.guaranteeNumber || '',
+      
+      // サービス期間
       data.servicePeriodStartDate || '',
-      data.emergencyContact?.name || '',
-      data.emergencyContact?.relationship || '',
-      data.emergencyContact?.phone || '',
-      data.agentInfo?.name || '',
-      data.agentInfo?.phone || '',
-      data.agentInfo?.contactPerson || '',
-      data.applicationDate || '',
+      servicePeriod,
+      
+      // 入居者・同居人情報（最大3人）
       residents[0]?.name || '',
       residents[0]?.nameKana || '',
       residents[0]?.relationship || '',
-      residents[0]?.birthDate || '',
       residents[1]?.name || '',
       residents[1]?.nameKana || '',
       residents[1]?.relationship || '',
-      residents[1]?.birthDate || '',
-      (data.selectedOptions || []).join('、')
+      residents[2]?.name || '',
+      residents[2]?.nameKana || '',
+      residents[2]?.relationship || '',
+      
+      // 緊急連絡先
+      emergency.name || '',
+      emergency.nameKana || '',
+      emergency.address || '',
+      emergency.homePhone || '',
+      emergency.mobilePhone || '',
+      emergency.relationship || '',
+      
+      // その他
+      data.applicationDate || ''
     ].map(escapeCSV);
   });
   
@@ -119,10 +192,10 @@ const escapeCSV = (value) => {
 // 商品名を取得
 const getProductName = (productId) => {
   const products = {
-    'anshin-support-24': 'あんしんサポート24',
-    'home-assist-24': 'ホームアシスト24',
-    'anshin-full-support': 'あんしんフルサポート',
-    'ierabu-anshin-support': 'いえらぶ安心サポート'
+    'anshin-support-24': '① あんしんサポート２４',
+    'home-assist-24': '② ホームアシスト２４',
+    'anshin-full-support': '③ あんしんフルサポート',
+    'ierabu-anshin-support': '④ いえらぶ安心サポート'
   };
   return products[productId] || productId;
 };
@@ -131,8 +204,8 @@ const getProductName = (productId) => {
 const getPaymentMethodName = (methodId) => {
   const methods = {
     'monthly': '月払',
-    'yearly-1': '年払（更新時運営会社案内）',
-    'yearly-2': '年払（更新時代理店案内）'
+    'yearly-1': '年払（2年更新）',
+    'yearly-2': '年払（1年更新）'
   };
   return methods[methodId] || methodId;
 };
