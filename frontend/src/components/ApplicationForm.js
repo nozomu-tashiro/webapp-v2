@@ -309,6 +309,9 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
           setShowSuccessModal(true);
         }, 500);
         
+        // ApplicationList更新イベントを発火
+        window.dispatchEvent(new Event('applicationSaved'));
+        
         // onSaveCompleteコールバックがあれば実行
         if (onSaveComplete) {
           onSaveComplete(result.id);

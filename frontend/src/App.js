@@ -67,15 +67,45 @@ function App() {
   };
 
   const handleEditApplication = (application) => {
-    setEditingApplication(application);
+    // 編集モードでフォームを開く
+    setEditingApplication(application.formData);
     // フォームまでスクロール
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleRegeneratePDF = (formData) => {
+  const handleRegeneratePDF = async (formData) => {
     // PDF再出力（編集なし）
-    setEditingApplication({ formData });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // ApplicationFormのhandleSubmit処理を直接呼び出す代わりに、
+    // バックエンドAPIに直接リクエストを送る
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/pdf/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('PDF生成に失敗しました');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `入会申込書_${formData.applicantName || 'application'}_${new Date().getTime()}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      alert('PDFを再出力しました');
+    } catch (error) {
+      console.error('PDF再出力エラー:', error);
+      alert('PDFの再出力に失敗しました');
+    }
   };
 
   // 認証前の画面
@@ -108,8 +138,9 @@ function App() {
       <main className="App-main">
         <ApplicationForm 
           onPDFGenerated={handlePDFGenerated}
-          editingData={editingApplication}
-          onEditComplete={() => setEditingApplication(null)}
+          editMode={!!editingApplication}
+          editData={editingApplication}
+          onSaveComplete={() => setEditingApplication(null)}
         />
         
         <ApplicationList 

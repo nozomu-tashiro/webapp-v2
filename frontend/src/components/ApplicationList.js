@@ -31,6 +31,17 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
 
   useEffect(() => {
     loadApplications();
+    
+    // 新規保存時にリストを更新
+    const handleApplicationSaved = () => {
+      loadApplications();
+    };
+    
+    window.addEventListener('applicationSaved', handleApplicationSaved);
+    
+    return () => {
+      window.removeEventListener('applicationSaved', handleApplicationSaved);
+    };
   }, []);
 
   // 削除確認
@@ -99,6 +110,17 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // 商品名を取得
+  const getProductDisplayName = (productId) => {
+    const products = {
+      'anshin-support-24': 'あんしんサポート24',
+      'home-assist-24': 'ホームアシスト24',
+      'anshin-full-support': 'あんしんフルサポート',
+      'ierabu-anshin-support': 'いえらぶ安心サポート'
+    };
+    return products[productId] || productId;
   };
 
   if (loading) {
