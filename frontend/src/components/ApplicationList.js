@@ -205,6 +205,16 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
     return products[productId] || productId;
   };
 
+  // 支払方法の表示名を取得
+  const getPaymentMethodDisplayName = (paymentMethod) => {
+    const methods = {
+      'monthly': '月払',
+      'yearly-2': '年払（２年更新）',
+      'yearly-1': '年払（１年更新）'
+    };
+    return methods[paymentMethod] || paymentMethod || '-';
+  };
+
   // オプションサービスの表示名を取得
   const getOptionDisplayNames = (selectedOptions) => {
     if (!selectedOptions || selectedOptions.length === 0) return '-';
@@ -294,8 +304,9 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
                   <th>物件名</th>
                   <th>号室</th>
                   <th>商品</th>
+                  <th>支払方法</th>
                   <th>追加オプション</th>
-                  <th>サービス期間</th>
+                  <th>サービス期間～</th>
                   <th>登録日時</th>
                   <th>ステータス</th>
                   <th>操作</th>
@@ -317,6 +328,9 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
                     <td>{app.formData.roomNumber || '-'}</td>
                     <td className="product-cell">
                       {getProductDisplayName(app.formData.selectedProduct)}
+                    </td>
+                    <td className="payment-cell">
+                      {getPaymentMethodDisplayName(app.formData.paymentMethod)}
                     </td>
                     <td className="option-cell">
                       {getOptionDisplayNames(app.formData.selectedOptions)}
