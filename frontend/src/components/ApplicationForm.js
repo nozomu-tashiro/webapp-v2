@@ -159,6 +159,21 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       return false;
     }
     
+    // 販売店コード形式チェック（XX-XX-XXXXXXXX または XX-XX-XXXXXXXX-XXX）
+    const agentCode = formData.agentInfo.code;
+    if (agentCode) {
+      // 端末番号付き（13-00-11223366-000）または端末番号なし（13-00-11223366）のどちらも許可
+      const validPattern = /^\d{2}-\d{2}-\d{8}(-\d{3})?$/;
+      
+      if (!validPattern.test(agentCode)) {
+        const errorMsg = '販売店コードの形式が正しくありません。\n正しい形式: XX-XX-XXXXXXXX または XX-XX-XXXXXXXX-XXX\n（例: 13-00-11223366 または 13-00-11223366-000）';
+        setError(errorMsg);
+        alert(errorMsg);
+        console.error('Validation failed:', errorMsg);
+        return false;
+      }
+    }
+    
     // Emergency contact validation removed per user request
     // No longer required even when senior-watch option is selected
     
@@ -249,7 +264,19 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       console.log('process.env.REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
       console.log('API URL (final):', apiUrl);
       console.log('Full URL:', `${apiUrl}/api/pdf/generate`);
-      console.log('Form Data:', JSON.stringify(formData, null, 2));
+      
+      // 販売店コードから端末番号（-XXXの部分）を削除
+      const cleanedFormData = { ...formData };
+      if (cleanedFormData.agentInfo.code && cleanedFormData.agentInfo.code.includes('-')) {
+        const parts = cleanedFormData.agentInfo.code.split('-');
+        if (parts.length === 4) {
+          // XX-XX-XXXXXXXX-XXX → XX-XX-XXXXXXXX に変換
+          cleanedFormData.agentInfo.code = `${parts[0]}-${parts[1]}-${parts[2]}`;
+          console.log('🔧 端末番号を削除:', formData.agentInfo.code, '→', cleanedFormData.agentInfo.code);
+        }
+      }
+      
+      console.log('Form Data:', JSON.stringify(cleanedFormData, null, 2));
       console.log('===========================');
       
       // プログレスバーのアニメーション
@@ -272,7 +299,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       setTimeout(() => setProgressStep('最終調整をしています'), 8000);
       
       console.log('Sending POST request...');
-      const response = await axios.post(`${apiUrl}/api/pdf/generate`, formData, {
+      const response = await axios.post(`${apiUrl}/api/pdf/generate`, cleanedFormData, {
         responseType: 'blob',
         timeout: 120000 // 120秒（2分）のタイムアウト - Render.comのコールドスタート対応
       });
@@ -297,18 +324,18 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
       console.log('PDF download complete!');
       
-      // データをIndexedDBに保存または更新
+      // データをIndexedDBに保存または更新（端末番号削除済みのデータを使用）
       try {
         const agentCode = currentUser?.agentCode || 'unknown';
         
         if (editingId) {
           // 編集モード：既存データを更新
-          await updateApplication(editingId, formData);
+          await updateApplication(editingId, cleanedFormData);
           setSavedDataId(editingId);
           console.log('Data updated in IndexedDB with ID:', editingId);
         } else {
           // 新規作成モード：新しいデータを追加
-          const result = await saveApplication(formData, agentCode);
+          const result = await saveApplication(cleanedFormData, agentCode);
           setSavedDataId(result.id);
           console.log('Data saved to IndexedDB with ID:', result.id);
         }
@@ -560,15 +587,28 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
           <div className="form-row">
             <label className="form-label">
-              販売店コード
+              販売店コード <span className="required">*</span>
             </label>
             <input
               type="text"
               value={formData.agentInfo.code}
-              onChange={(e) => handleNestedChange('agentInfo', 'code', e.target.value)}
+              onChange={(e) => {
+                let code = e.target.value;
+                // 端末番号（最後の-XXX）を自動削除
+                const match = code.match(/^(\d{2}-\d{2}-\d{8})-\d{3}$/);
+                if (match) {
+                  code = match[1];
+                }
+                handleNestedChange('agentInfo', 'code', code);
+              }}
               className="form-input"
-              placeholder="13-00-11223366-000"
+              placeholder="13-00-11223366（端末番号は自動削除されます）"
             />
+            {formData.agentInfo.code && !/^\d{2}-\d{2}-\d{8}$/.test(formData.agentInfo.code) && (
+              <div className="warning-message">
+                ⚠️ 形式が正しくありません。正しい形式: XX-XX-XXXXXXXX（例: 13-00-11223366）
+              </div>
+            )}
           </div>
 
           <div className="form-row">

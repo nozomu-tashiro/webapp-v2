@@ -204,8 +204,8 @@ const getProductName = (productId) => {
 const getPaymentMethodName = (methodId) => {
   const methods = {
     'monthly': '月払',
-    'yearly-1': '年払（2年更新）',
-    'yearly-2': '年払（1年更新）'
+    'yearly-2': '年払（2年更新）',
+    'yearly-1': '年払（1年更新）'
   };
   return methods[methodId] || methodId;
 };
