@@ -149,10 +149,12 @@ function App() {
           }}
         />
         
-        <ApplicationList 
-          onEdit={handleEditApplication}
-          onRegeneratePDF={handleRegeneratePDF}
-        />
+        <div id="application-list-section">
+          <ApplicationList 
+            onEdit={handleEditApplication}
+            onRegeneratePDF={handleRegeneratePDF}
+          />
+        </div>
       </main>
 
       <footer className="App-footer">

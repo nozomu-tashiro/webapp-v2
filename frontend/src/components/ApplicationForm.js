@@ -233,11 +233,17 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 一覧画面へ遷移（今後実装）
+  // 一覧画面へ遷移
   const handleViewList = () => {
     setShowSuccessModal(false);
-    // TODO: 一覧画面へのナビゲーション実装
-    alert('一覧画面への遷移機能は次のステップで実装します！');
+    
+    // 一覧セクションまでスクロール
+    setTimeout(() => {
+      const listSection = document.getElementById('application-list-section');
+      if (listSection) {
+        listSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 300); // モーダルが閉じるまで少し待つ
   };
 
   // Submit form and generate PDF
