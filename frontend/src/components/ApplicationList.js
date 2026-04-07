@@ -205,6 +205,36 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
     return products[productId] || productId;
   };
 
+  // オプションサービスの表示名を取得
+  const getOptionDisplayNames = (selectedOptions) => {
+    if (!selectedOptions || selectedOptions.length === 0) return '-';
+    
+    const optionMap = {
+      'mamorocca': 'マモロッカ',
+      'magokoro': 'まごころ',
+      'shoelit': 'シューリット！'
+    };
+    
+    return selectedOptions
+      .map(opt => optionMap[opt] || opt)
+      .join(', ');
+  };
+
+  // サービス期間をフォーマット
+  const formatServicePeriod = (startDate) => {
+    if (!startDate) return '-';
+    try {
+      const date = new Date(startDate);
+      return date.toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).replace(/\//g, '-');
+    } catch (error) {
+      return startDate;
+    }
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -262,7 +292,10 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
                   <th>No.</th>
                   <th>申込者名</th>
                   <th>物件名</th>
+                  <th>号室</th>
                   <th>商品</th>
+                  <th>追加オプション</th>
+                  <th>サービス期間</th>
                   <th>登録日時</th>
                   <th>ステータス</th>
                   <th>操作</th>
@@ -281,8 +314,15 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
                     <td>{index + 1}</td>
                     <td>{app.formData.applicantName || '-'}</td>
                     <td>{app.formData.propertyName || '-'}</td>
+                    <td>{app.formData.roomNumber || '-'}</td>
                     <td className="product-cell">
                       {getProductDisplayName(app.formData.selectedProduct)}
+                    </td>
+                    <td className="option-cell">
+                      {getOptionDisplayNames(app.formData.selectedOptions)}
+                    </td>
+                    <td className="period-cell">
+                      {formatServicePeriod(app.formData.servicePeriodStartDate)}
                     </td>
                     <td className="datetime-cell">
                       <div className="datetime-main">

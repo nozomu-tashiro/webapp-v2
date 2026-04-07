@@ -265,6 +265,21 @@
   font-weight: 600;
 }
 
+.option-cell {
+  font-size: 11px;
+  color: #555;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.period-cell {
+  font-size: 11px;
+  color: #555;
+  white-space: nowrap;
+}
+
 .datetime-cell {
   color: #555;
   font-size: 11px;
