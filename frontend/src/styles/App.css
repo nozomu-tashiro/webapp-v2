@@ -8,19 +8,56 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 2rem;
-  text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .App-header h1 {
   font-size: 2rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
+  text-align: left;
 }
 
 .App-header .subtitle {
   font-size: 1rem;
   opacity: 0.9;
+  text-align: left;
+}
+
+.header-user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.logout-button {
+  padding: 8px 20px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: white;
+  color: #667eea;
 }
 
 .App-main {
@@ -45,12 +82,23 @@
 }
 
 @media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
   .App-header h1 {
     font-size: 1.5rem;
   }
   
   .App-header .subtitle {
     font-size: 0.9rem;
+  }
+
+  .header-user-info {
+    width: 100%;
+    justify-content: space-between;
   }
   
   .App-main {

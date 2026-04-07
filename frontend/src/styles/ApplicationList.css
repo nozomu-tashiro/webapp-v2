@@ -1,0 +1,264 @@
+.application-list-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.list-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.list-stats {
+  font-size: 16px;
+  color: #666;
+}
+
+.list-stats strong {
+  color: #667eea;
+  font-size: 20px;
+}
+
+/* 空の状態 */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #888;
+}
+
+.empty-state p {
+  margin: 10px 0;
+  font-size: 15px;
+}
+
+/* ローディング */
+.loading-container {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 20px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* テーブル */
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.application-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.application-table thead {
+  background-color: #f8f9fa;
+}
+
+.application-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.application-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.application-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.product-cell {
+  color: #667eea;
+  font-weight: 500;
+}
+
+.datetime-cell {
+  color: #888;
+  font-size: 13px;
+}
+
+.action-cell {
+  white-space: nowrap;
+}
+
+.action-cell button {
+  padding: 6px 12px;
+  margin-right: 6px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background-color: #4299e1;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #3182ce;
+}
+
+.btn-pdf {
+  background-color: #48bb78;
+  color: white;
+}
+
+.btn-pdf:hover {
+  background-color: #38a169;
+}
+
+.btn-delete {
+  background-color: #f56565;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #e53e3e;
+}
+
+/* アクションボタン */
+.list-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-csv-export {
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-csv-export:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+}
+
+/* 提出ダイアログ */
+.submit-dialog {
+  max-width: 600px;
+}
+
+.submit-dialog h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.data-count {
+  text-align: center;
+  font-size: 16px;
+  color: #667eea;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.submit-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.submit-option {
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.submit-option:hover {
+  border-color: #667eea;
+  background-color: #f7fafc;
+}
+
+.submit-option.selected {
+  border-color: #667eea;
+  background-color: #edf2f7;
+}
+
+.option-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.option-content h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.option-content p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .table-container {
+    font-size: 13px;
+  }
+
+  .application-table th,
+  .application-table td {
+    padding: 8px 6px;
+  }
+
+  .action-cell button {
+    display: block;
+    margin: 4px 0;
+    width: 100%;
+  }
+
+  .submit-options {
+    grid-template-columns: 1fr;
+  }
+}
