@@ -170,7 +170,17 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
   // フォームをクリアして次の入力へ
   const handleContinueInput = () => {
     setShowSuccessModal(false);
-    // フォームを初期状態にリセット
+    
+    // 保持する項目（商品情報、販売店情報）
+    const preservedData = {
+      selectedProduct: formData.selectedProduct,
+      paymentMethod: formData.paymentMethod,
+      selectedOptions: formData.selectedOptions,
+      servicePrice: formData.servicePrice,
+      agentInfo: formData.agentInfo // 販売店情報は全て保持
+    };
+    
+    // フォームをリセット（一部項目は保持）
     setFormData({
       applicationType: 'new',
       applicationDate: new Date().toISOString().split('T')[0],
@@ -185,11 +195,11 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
       propertyName: '',
       propertyNameKana: '',
       roomNumber: '',
-      selectedProduct: 'anshin-support-24',
-      paymentMethod: 'monthly',
-      selectedOptions: [],
-      servicePrice: '',
-      guaranteeNumber: '',
+      selectedProduct: preservedData.selectedProduct, // ✅ 保持
+      paymentMethod: preservedData.paymentMethod, // ✅ 保持
+      selectedOptions: preservedData.selectedOptions, // ✅ 保持
+      servicePrice: preservedData.servicePrice, // ✅ 保持
+      guaranteeNumber: '', // ❌ クリア（毎回変わる）
       servicePeriodStartDate: '',
       emergencyContact: {
         name: '',
@@ -199,14 +209,10 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
         mobilePhone: '',
         relationship: ''
       },
-      agentInfo: {
-        name: '',
-        phone: '',
-        code: '',
-        representativeName: ''
-      },
+      agentInfo: preservedData.agentInfo, // ✅ 販売店情報は保持
       remarks: ''
     });
+    
     // ページトップへスクロール
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
