@@ -10,6 +10,43 @@
   max-width: 100%;
 }
 
+/* 編集モードバナー */
+.edit-mode-banner {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 2px solid #ff9800;
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
+}
+
+.edit-banner-icon {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.edit-banner-content {
+  flex: 1;
+}
+
+.edit-banner-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e65100;
+  margin: 0 0 6px 0;
+}
+
+.edit-banner-text {
+  font-size: 13px;
+  color: #5d4037;
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* Error message */
 .error-message {
   background-color: #fee;

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/ApplicationForm.css';
-import { saveApplication, getApplicationsByAgent, checkDuplicate } from '../utils/indexedDB';
+import { saveApplication, updateApplication, getApplicationsByAgent, checkDuplicate } from '../utils/indexedDB';
 import { getCurrentUser } from '../utils/auth';
 
-const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = null }) => {
+const ApplicationForm = ({ editMode = false, editData = null, editingId = null, onSaveComplete = null }) => {
   // 認証情報を取得
   const currentUser = getCurrentUser();
   
@@ -297,12 +297,21 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
 
       console.log('PDF download complete!');
       
-      // データをIndexedDBに保存
+      // データをIndexedDBに保存または更新
       try {
         const agentCode = currentUser?.agentCode || 'unknown';
-        const result = await saveApplication(formData, agentCode);
-        setSavedDataId(result.id);
-        console.log('Data saved to IndexedDB with ID:', result.id);
+        
+        if (editingId) {
+          // 編集モード：既存データを更新
+          await updateApplication(editingId, formData);
+          setSavedDataId(editingId);
+          console.log('Data updated in IndexedDB with ID:', editingId);
+        } else {
+          // 新規作成モード：新しいデータを追加
+          const result = await saveApplication(formData, agentCode);
+          setSavedDataId(result.id);
+          console.log('Data saved to IndexedDB with ID:', result.id);
+        }
         
         // 成功モーダルを表示
         setTimeout(() => {
@@ -314,7 +323,7 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
         
         // onSaveCompleteコールバックがあれば実行
         if (onSaveComplete) {
-          onSaveComplete(result.id);
+          onSaveComplete(editingId || savedDataId);
         }
       } catch (saveError) {
         console.error('Failed to save data to IndexedDB:', saveError);
@@ -365,6 +374,20 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
 
   return (
     <div className="application-form-container">
+      {/* 編集モードバナー */}
+      {editingId && (
+        <div className="edit-mode-banner">
+          <div className="edit-banner-icon">✏️</div>
+          <div className="edit-banner-content">
+            <h3 className="edit-banner-title">編集モード</h3>
+            <p className="edit-banner-text">
+              「{formData.applicantName || '申込者'}」さんの申込データを編集中です。<br />
+              PDF生成後、元のデータが上書きされます。
+            </p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="application-form">
         
         {/* Error message */}
@@ -999,8 +1022,12 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
             type="submit"
             className="btn-submit"
             disabled={loading}
+            style={editingId ? {
+              backgroundColor: '#ff9800',
+              borderColor: '#f57c00'
+            } : {}}
           >
-            {loading ? 'PDF生成中...' : 'PDFを生成・ダウンロード'}
+            {loading ? 'PDF生成中...' : (editingId ? '✏️ 編集内容を保存してPDF再生成' : 'PDFを生成・ダウンロード')}
           </button>
         </div>
       </form>
@@ -1047,51 +1074,88 @@ const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = n
       {showSuccessModal && (
         <div className="progress-modal-overlay" onClick={() => setShowSuccessModal(false)}>
           <div className="progress-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="progress-title">✅ データを保存しました！</h3>
+            <h3 className="progress-title">
+              {editingId ? '✅ データを上書き保存しました！' : '✅ データを保存しました！'}
+            </h3>
             
             <div style={{ textAlign: 'center', margin: '20px 0' }}>
-              <p style={{ fontSize: '14px', color: '#333', marginBottom: '12px' }}>
-                PDF生成とデータ保存が完了しました。
-              </p>
-              <p style={{ fontSize: '13px', color: '#666' }}>
-                続けて入力する場合は「次の入力へ」を、<br />
-                登録済みデータを確認する場合は「一覧を見る」をクリックしてください。
-              </p>
+              {editingId ? (
+                <>
+                  <p style={{ fontSize: '14px', color: '#333', marginBottom: '12px' }}>
+                    「{formData.applicantName || '申込者'}」さんの申込データを更新しました。
+                  </p>
+                  <p style={{ fontSize: '13px', color: '#666' }}>
+                    元のデータは削除されています。<br />
+                    PDFファイルがダウンロードされました。
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: '14px', color: '#333', marginBottom: '12px' }}>
+                    PDF生成とデータ保存が完了しました。
+                  </p>
+                  <p style={{ fontSize: '13px', color: '#666' }}>
+                    続けて入力する場合は「次の入力へ」を、<br />
+                    登録済みデータを確認する場合は「一覧を見る」をクリックしてください。
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="modal-buttons" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '20px' }}>
-              <button
-                className="btn-secondary"
-                onClick={handleContinueInput}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#003366',
-                  color: 'white',
-                  border: '1px solid #002244',
-                  borderRadius: '2px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                次の入力へ
-              </button>
-              <button
-                className="btn-primary"
-                onClick={handleViewList}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  border: '1px solid #1565c0',
-                  borderRadius: '2px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                一覧を見る
-              </button>
+              {editingId ? (
+                <button
+                  className="btn-primary"
+                  onClick={handleViewList}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#1976d2',
+                    color: 'white',
+                    border: '1px solid #1565c0',
+                    borderRadius: '2px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  一覧に戻る
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="btn-secondary"
+                    onClick={handleContinueInput}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#003366',
+                      color: 'white',
+                      border: '1px solid #002244',
+                      borderRadius: '2px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    次の入力へ
+                  </button>
+                  <button
+                    className="btn-primary"
+                    onClick={handleViewList}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#1976d2',
+                      color: 'white',
+                      border: '1px solid #1565c0',
+                      borderRadius: '2px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    一覧を見る
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -11,6 +11,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [editingApplication, setEditingApplication] = useState(null);
+  const [editingId, setEditingId] = useState(null); // 編集中のデータID
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ function App() {
   const handleEditApplication = (application) => {
     // 編集モードでフォームを開く
     setEditingApplication(application.formData);
+    setEditingId(application.id); // 編集中のIDを保存
     // フォームまでスクロール
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -140,7 +142,11 @@ function App() {
           onPDFGenerated={handlePDFGenerated}
           editMode={!!editingApplication}
           editData={editingApplication}
-          onSaveComplete={() => setEditingApplication(null)}
+          editingId={editingId}
+          onSaveComplete={() => {
+            setEditingApplication(null);
+            setEditingId(null);
+          }}
         />
         
         <ApplicationList 

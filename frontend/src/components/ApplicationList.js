@@ -170,7 +170,14 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
                       {getProductDisplayName(app.formData.selectedProduct)}
                     </td>
                     <td className="datetime-cell">
-                      {formatDateTime(app.timestamp)}
+                      <div className="datetime-main">
+                        {formatDateTime(app.timestamp)}
+                      </div>
+                      {app.updatedAt && (
+                        <div className="datetime-updated">
+                          ⚠️ {formatDateTime(app.updatedAt)}更新
+                        </div>
+                      )}
                     </td>
                     <td className="action-cell">
                       <button

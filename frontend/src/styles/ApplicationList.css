@@ -114,6 +114,17 @@
   font-size: 11px;
 }
 
+.datetime-main {
+  margin-bottom: 2px;
+}
+
+.datetime-updated {
+  color: #ff6f00;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
 .action-cell {
   white-space: nowrap;
 }
