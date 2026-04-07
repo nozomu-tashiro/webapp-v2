@@ -1,0 +1,13 @@
+../frontend/
+../node_modules/
+../*.md
+../.git/
+../data/
+../docs/
+../excel_images/
+../excel_images_new/
+../*.pdf
+../*.py
+../*.log
+../*.png
+../test_*.js

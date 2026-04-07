@@ -1,0 +1,13 @@
+{
+  "build": {
+    "command": "cd frontend && npm install && npm run build",
+    "cwd": "/",
+    "watch_dir": "frontend",
+    "output_directory": "frontend/build"
+  },
+  "preview": {
+    "command": "cd frontend && npm install && npm run build",
+    "cwd": "/",
+    "output_directory": "frontend/build"
+  }
+}

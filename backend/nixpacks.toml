@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "python3", "cairo", "pango", "pixman", "pkg-config"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["echo 'No build step required for Node.js backend'"]
+
+[start]
+cmd = "npm start"
