@@ -210,9 +210,9 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
     if (!selectedOptions || selectedOptions.length === 0) return '-';
     
     const optionMap = {
-      'mamorocca': 'マモロッカ',
-      'magokoro': 'まごころ',
-      'shoelit': 'シューリット！'
+      'neighbor-trouble': 'マモロッカ',
+      'senior-watch': 'まごころ',
+      'appliance-support': 'シューリット！'
     };
     
     return selectedOptions
