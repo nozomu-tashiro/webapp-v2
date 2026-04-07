@@ -41,6 +41,10 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       name: '',
       phone: '',
       code: '',
+      codePart1: '', // 2桁（都道府県）
+      codePart2: '', // 2桁（地域）
+      codePart3: '', // 最大10桁（会員番号）
+      codePart4: '', // 3桁（端末番号）
       representativeName: ''
     }
   });
@@ -72,7 +76,23 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
   // 編集モード用：editDataが渡された場合、フォームに読み込む
   useEffect(() => {
     if (editMode && editData) {
-      setFormData(editData);
+      // 代理店コードを分割
+      const code = editData.agentInfo?.code || '';
+      const parts = code.split('-');
+      const codePart1 = parts[0] || '';
+      const codePart2 = parts[1] || '';
+      const codePart3 = parts[2] || '';
+      
+      setFormData({
+        ...editData,
+        agentInfo: {
+          ...editData.agentInfo,
+          codePart1,
+          codePart2,
+          codePart3,
+          codePart4: '' // 端末番号は空
+        }
+      });
       console.log('Edit mode activated, loaded data:', editData);
     }
   }, [editMode, editData]);
@@ -596,24 +616,71 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             <label className="form-label">
               販売店コード <span className="required">*</span>
             </label>
-            <input
-              type="text"
-              value={formData.agentInfo.code}
-              onChange={(e) => {
-                let code = e.target.value;
-                // 端末番号（最後の-XXX）を自動削除
-                const match = code.match(/^(\d{2}-\d{2}-\d{8})-\d{3}$/);
-                if (match) {
-                  code = match[1];
-                }
-                handleNestedChange('agentInfo', 'code', code);
-              }}
-              className="form-input"
-              placeholder="13-00-0000000000-000（端末番号は自動削除されます）"
-            />
-            {formData.agentInfo.code && !/^\d{2}-\d{2}-\d{1,10}(-\d{3})?$/.test(formData.agentInfo.code) && (
+            <div className="code-input-group">
+              <input
+                type="text"
+                value={formData.agentInfo.codePart1}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 2);
+                  handleNestedChange('agentInfo', 'codePart1', value);
+                  // 完全なコードを組み立て
+                  const fullCode = `${value}-${formData.agentInfo.codePart2}-${formData.agentInfo.codePart3}`;
+                  handleNestedChange('agentInfo', 'code', fullCode);
+                }}
+                className="form-input code-part"
+                placeholder="13"
+                maxLength="2"
+              />
+              <span className="code-separator">-</span>
+              <input
+                type="text"
+                value={formData.agentInfo.codePart2}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 2);
+                  handleNestedChange('agentInfo', 'codePart2', value);
+                  // 完全なコードを組み立て
+                  const fullCode = `${formData.agentInfo.codePart1}-${value}-${formData.agentInfo.codePart3}`;
+                  handleNestedChange('agentInfo', 'code', fullCode);
+                }}
+                className="form-input code-part"
+                placeholder="00"
+                maxLength="2"
+              />
+              <span className="code-separator">-</span>
+              <input
+                type="text"
+                value={formData.agentInfo.codePart3}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  handleNestedChange('agentInfo', 'codePart3', value);
+                  // 完全なコードを組み立て
+                  const fullCode = `${formData.agentInfo.codePart1}-${formData.agentInfo.codePart2}-${value}`;
+                  handleNestedChange('agentInfo', 'code', fullCode);
+                }}
+                className="form-input code-part code-part-long"
+                placeholder="00000"
+                maxLength="10"
+              />
+              <span className="code-separator">-</span>
+              <input
+                type="text"
+                value={formData.agentInfo.codePart4}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                  handleNestedChange('agentInfo', 'codePart4', value);
+                  // 端末番号は表示用のみで、code には含めない
+                }}
+                className="form-input code-part"
+                placeholder="000"
+                maxLength="3"
+              />
+            </div>
+            <div className="code-hint">
+              ※ 端末番号（最後の3桁）は自動的に削除されます
+            </div>
+            {formData.agentInfo.code && !/^\d{2}-\d{2}-\d{1,10}$/.test(formData.agentInfo.code) && (
               <div className="warning-message">
-                ⚠️ 形式が正しくありません。正しい形式: XX-XX-最大10桁-XXX（例: 13-00-0000000000-000）
+                ⚠️ 形式が正しくありません。正しい形式: XX-XX-最大10桁（例: 13-00-00000）
               </div>
             )}
           </div>
