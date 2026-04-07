@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   getApplicationsByAgent,
   deleteApplication,
-  getApplicationCount
+  getApplicationCount,
+  markAllAsSubmitted
 } from '../utils/indexedDB';
 import { getCurrentUser } from '../utils/auth';
 import { convertToCSV, downloadCSV, sendCSVByEmail } from '../utils/csvExport';
@@ -13,6 +14,7 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
   const [loading, setLoading] = useState(true);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [submitMethod, setSubmitMethod] = useState('download'); // 'download' or 'email'
+  const [selectedIds, setSelectedIds] = useState([]); // チェックボックス選択管理
   const currentUser = getCurrentUser();
 
   // データ読み込み
@@ -44,7 +46,27 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
     };
   }, []);
 
-  // 削除確認
+  // 全選択/全解除
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(applications.map(app => app.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  // 個別選択
+  const handleSelectOne = (id) => {
+    setSelectedIds(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(selectedId => selectedId !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  // 削除確認（単一）
   const handleDelete = async (id, applicantName) => {
     if (!window.confirm(`${applicantName}さんの申込データを削除してよろしいですか？`)) {
       return;
@@ -54,30 +76,90 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
       await deleteApplication(id);
       alert('削除しました');
       loadApplications();
+      setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
     } catch (error) {
       console.error('削除エラー:', error);
       alert('削除に失敗しました');
     }
   };
 
-  // CSV出力
+  // 一括削除
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) {
+      alert('削除するデータを選択してください');
+      return;
+    }
+
+    if (!window.confirm(`選択した${selectedIds.length}件のデータを削除してよろしいですか？`)) {
+      return;
+    }
+
+    try {
+      await Promise.all(selectedIds.map(id => deleteApplication(id)));
+      alert(`${selectedIds.length}件のデータを削除しました`);
+      setSelectedIds([]);
+      loadApplications();
+    } catch (error) {
+      console.error('一括削除エラー:', error);
+      alert('一括削除に失敗しました');
+    }
+  };
+
+  // 出力済みデータを一括削除
+  const handleDeleteSubmitted = async () => {
+    const submittedApps = applications.filter(app => app.submitted);
+    if (submittedApps.length === 0) {
+      alert('出力済みデータがありません');
+      return;
+    }
+
+    if (!window.confirm(`出力済みデータ${submittedApps.length}件を削除してよろしいですか？`)) {
+      return;
+    }
+
+    try {
+      await Promise.all(submittedApps.map(app => deleteApplication(app.id)));
+      alert(`${submittedApps.length}件の出力済みデータを削除しました`);
+      setSelectedIds([]);
+      loadApplications();
+    } catch (error) {
+      console.error('出力済み削除エラー:', error);
+      alert('削除に失敗しました');
+    }
+  };
+
+  // CSV出力（未出力データのみ）
   const handleCSVExport = () => {
-    if (applications.length === 0) {
-      alert('出力するデータがありません');
+    const unsubmittedApps = applications.filter(app => !app.submitted);
+    
+    if (unsubmittedApps.length === 0) {
+      alert('未出力のデータがありません。\nすべてのデータは既にCSV出力済みです。');
       return;
     }
 
     setShowSubmitDialog(true);
   };
 
-  // CSV ダウンロード
-  const handleDownloadCSV = () => {
+  // CSV ダウンロード（未出力データのみ）
+  const handleDownloadCSV = async () => {
     try {
-      const csvContent = convertToCSV(applications, currentUser.agentCode, currentUser.agentName);
+      const unsubmittedApps = applications.filter(app => !app.submitted);
+      
+      if (unsubmittedApps.length === 0) {
+        alert('未出力のデータがありません');
+        return;
+      }
+
+      const csvContent = convertToCSV(unsubmittedApps, currentUser.agentCode, currentUser.agentName);
       if (csvContent) {
         downloadCSV(csvContent, currentUser.agentCode, currentUser.agentName);
-        alert('CSVファイルをダウンロードしました');
+        
+        // 出力済みフラグを立てる
+        await markAllAsSubmitted(currentUser.agentCode);
+        
+        alert(`CSVファイルをダウンロードしました。\n出力件数: ${unsubmittedApps.length}件\n\n※このデータは3日後に自動削除されます。`);
         setShowSubmitDialog(false);
+        loadApplications(); // リスト更新
       }
     } catch (error) {
       console.error('CSV出力エラー:', error);
@@ -134,10 +216,27 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
 
   return (
     <div className="application-list-container">
+      {/* 重要な注意文バナー */}
+      <div className="important-notice-banner">
+        <div className="notice-icon">⚠️</div>
+        <div className="notice-content">
+          <h3 className="notice-title">【重要】データ自動削除について</h3>
+          <p className="notice-text">
+            CSV出力済みデータは、<strong className="highlight-danger">出力から3日後に自動削除</strong>されます。<br />
+            必要なデータは<strong className="highlight-warning">CSV出力後、すみやかにダウンロード</strong>してください。
+          </p>
+        </div>
+      </div>
+
       <div className="list-header">
         <h2>登録済みデータ一覧</h2>
         <div className="list-stats">
           現在の登録件数: <strong>{applications.length}件</strong>
+          {applications.filter(app => !app.submitted).length > 0 && (
+            <span className="unsubmitted-count">
+              （未出力: <strong>{applications.filter(app => !app.submitted).length}件</strong>）
+            </span>
+          )}
         </div>
       </div>
 
@@ -152,17 +251,33 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
             <table className="application-table">
               <thead>
                 <tr>
+                  <th className="checkbox-cell">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.length === applications.length && applications.length > 0}
+                      onChange={handleSelectAll}
+                      title="全選択/全解除"
+                    />
+                  </th>
                   <th>No.</th>
                   <th>申込者名</th>
                   <th>物件名</th>
                   <th>商品</th>
                   <th>登録日時</th>
+                  <th>ステータス</th>
                   <th>操作</th>
                 </tr>
               </thead>
               <tbody>
                 {applications.map((app, index) => (
-                  <tr key={app.id}>
+                  <tr key={app.id} className={app.submitted ? 'submitted-row' : ''}>
+                    <td className="checkbox-cell">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(app.id)}
+                        onChange={() => handleSelectOne(app.id)}
+                      />
+                    </td>
                     <td>{index + 1}</td>
                     <td>{app.formData.applicantName || '-'}</td>
                     <td>{app.formData.propertyName || '-'}</td>
@@ -179,11 +294,34 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
                         </div>
                       )}
                     </td>
+                    <td className="status-cell">
+                      {app.submitted ? (
+                        <div className="status-submitted">
+                          <span className="status-icon">✅</span>
+                          <span className="status-text">出力済</span>
+                          <div className="submitted-date">
+                            {formatDateTime(app.submittedAt)}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="status-pending">
+                          <span className="status-icon">📝</span>
+                          <span className="status-text">未出力</span>
+                        </div>
+                      )}
+                    </td>
                     <td className="action-cell">
                       <button
-                        onClick={() => onEdit(app)}
-                        className="btn-edit"
-                        title="編集"
+                        onClick={() => {
+                          if (app.submitted) {
+                            alert('⚠️ このデータは既にCSV出力済みです。\n編集はできません。\n\n再度編集が必要な場合は、新規データとして再登録してください。');
+                          } else {
+                            onEdit(app);
+                          }
+                        }}
+                        className={app.submitted ? 'btn-edit btn-disabled' : 'btn-edit'}
+                        title={app.submitted ? 'CSV出力済みのため編集不可' : '編集'}
+                        disabled={app.submitted}
                       >
                         編集
                       </button>
@@ -209,8 +347,26 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
           </div>
 
           <div className="list-actions">
-            <button onClick={handleCSVExport} className="btn-csv-export">
-              全データをCSV出力
+            <button 
+              onClick={handleBulkDelete} 
+              className="btn-bulk-delete"
+              disabled={selectedIds.length === 0}
+            >
+              選択した{selectedIds.length}件を削除
+            </button>
+            <button 
+              onClick={handleDeleteSubmitted} 
+              className="btn-delete-submitted"
+              disabled={applications.filter(app => app.submitted).length === 0}
+            >
+              出力済みデータを一括削除（{applications.filter(app => app.submitted).length}件）
+            </button>
+            <button 
+              onClick={handleCSVExport} 
+              className="btn-csv-export"
+              disabled={applications.filter(app => !app.submitted).length === 0}
+            >
+              未出力データをCSV出力（{applications.filter(app => !app.submitted).length}件）
             </button>
           </div>
         </>
@@ -221,7 +377,12 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
         <div className="modal-overlay" onClick={() => setShowSubmitDialog(false)}>
           <div className="modal-content submit-dialog" onClick={(e) => e.stopPropagation()}>
             <h3>CSV出力方法を選択</h3>
-            <p className="data-count">出力件数: {applications.length}件</p>
+            <p className="data-count">
+              出力件数: <strong>{applications.filter(app => !app.submitted).length}件</strong>（未出力データのみ）
+            </p>
+            <p className="csv-notice">
+              ⚠️ CSV出力後、データは<strong>3日後に自動削除</strong>されます。
+            </p>
 
             <div className="submit-options">
               <div

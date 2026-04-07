@@ -247,7 +247,7 @@ export const markAllAsSubmitted = async (agentCode) => {
   }
 };
 
-// 古いデータを削除（7日以上経過したデータ）
+// 古いデータを削除（3日以上経過した出力済みデータ）
 export const cleanupOldData = async () => {
   try {
     const db = await openDB();
@@ -260,12 +260,14 @@ export const cleanupOldData = async () => {
       request.onsuccess = () => {
         const allData = request.result || [];
         const now = new Date();
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
         
         const deletePromises = allData
           .filter(item => {
-            const timestamp = new Date(item.timestamp);
-            return timestamp < sevenDaysAgo && item.submitted;
+            // CSV出力済み（submitted=true）かつ出力日から3日以上経過したデータを削除
+            if (!item.submitted || !item.submittedAt) return false;
+            const submittedDate = new Date(item.submittedAt);
+            return submittedDate < threeDaysAgo;
           })
           .map(item => store.delete(item.id));
         
