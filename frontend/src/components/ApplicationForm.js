@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/ApplicationForm.css';
+import { saveApplication, getApplicationsByAgent, checkDuplicate } from '../utils/indexedDB';
+import { getCurrentUser } from '../utils/auth';
 
-const ApplicationForm = () => {
+const ApplicationForm = ({ editMode = false, editData = null, onSaveComplete = null }) => {
+  // 認証情報を取得
+  const currentUser = getCurrentUser();
+  
   // Form state
   const [formData, setFormData] = useState({
     applicationType: 'new',
@@ -42,6 +47,8 @@ const ApplicationForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [savedDataId, setSavedDataId] = useState(null);
   const [progress, setProgress] = useState(0);
   const [progressStep, setProgressStep] = useState('');
   
@@ -61,6 +68,14 @@ const ApplicationForm = () => {
       [section]: !prev[section]
     }));
   };
+
+  // 編集モード用：editDataが渡された場合、フォームに読み込む
+  useEffect(() => {
+    if (editMode && editData) {
+      setFormData(editData);
+      console.log('Edit mode activated, loaded data:', editData);
+    }
+  }, [editMode, editData]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -152,6 +167,58 @@ const ApplicationForm = () => {
     return true;
   };
 
+  // フォームをクリアして次の入力へ
+  const handleContinueInput = () => {
+    setShowSuccessModal(false);
+    // フォームを初期状態にリセット
+    setFormData({
+      applicationType: 'new',
+      applicationDate: new Date().toISOString().split('T')[0],
+      applicantName: '',
+      applicantNameKana: '',
+      mobilePhone: '',
+      homePhone: '',
+      birthDate: '',
+      gender: '',
+      residents: [],
+      propertyAddress: '',
+      propertyName: '',
+      propertyNameKana: '',
+      roomNumber: '',
+      selectedProduct: 'anshin-support-24',
+      paymentMethod: 'monthly',
+      selectedOptions: [],
+      servicePrice: '',
+      guaranteeNumber: '',
+      servicePeriodStartDate: '',
+      emergencyContact: {
+        name: '',
+        nameKana: '',
+        address: '',
+        phone: '',
+        relationship: ''
+      },
+      agencyInfo: {
+        storeName: '',
+        storeCode: '',
+        agentName: '',
+        agentCode: '',
+        phone: '',
+        email: ''
+      },
+      remarks: ''
+    });
+    // ページトップへスクロール
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 一覧画面へ遷移（今後実装）
+  const handleViewList = () => {
+    setShowSuccessModal(false);
+    // TODO: 一覧画面へのナビゲーション実装
+    alert('一覧画面への遷移機能は次のステップで実装します！');
+  };
+
   // Submit form and generate PDF
   const handleSubmit = async (e) => {
     console.log('=== handleSubmit called ===');
@@ -224,7 +291,28 @@ const ApplicationForm = () => {
       window.URL.revokeObjectURL(url);
 
       console.log('PDF download complete!');
-      // alert('PDFの生成に成功しました！'); // アラート削除、プログレス表示で十分
+      
+      // データをIndexedDBに保存
+      try {
+        const agentCode = currentUser?.agentCode || 'unknown';
+        const result = await saveApplication(formData, agentCode);
+        setSavedDataId(result.id);
+        console.log('Data saved to IndexedDB with ID:', result.id);
+        
+        // 成功モーダルを表示
+        setTimeout(() => {
+          setShowSuccessModal(true);
+        }, 500);
+        
+        // onSaveCompleteコールバックがあれば実行
+        if (onSaveComplete) {
+          onSaveComplete(savedId);
+        }
+      } catch (saveError) {
+        console.error('Failed to save data to IndexedDB:', saveError);
+        // 保存失敗してもPDFは成功しているので、警告のみ
+        alert('PDF生成は成功しましたが、データの保存に失敗しました。');
+      }
       
     } catch (err) {
       setProgress(0);
@@ -942,6 +1030,60 @@ const ApplicationForm = () => {
                 初回は通常30秒ほどかかる場合があります<br />
                 ※画面は閉じずにお待ちください
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 保存成功モーダル */}
+      {showSuccessModal && (
+        <div className="progress-modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="progress-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="progress-title">✅ データを保存しました！</h3>
+            
+            <div style={{ textAlign: 'center', margin: '20px 0' }}>
+              <p style={{ fontSize: '14px', color: '#333', marginBottom: '12px' }}>
+                PDF生成とデータ保存が完了しました。
+              </p>
+              <p style={{ fontSize: '13px', color: '#666' }}>
+                続けて入力する場合は「次の入力へ」を、<br />
+                登録済みデータを確認する場合は「一覧を見る」をクリックしてください。
+              </p>
+            </div>
+
+            <div className="modal-buttons" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '20px' }}>
+              <button
+                className="btn-secondary"
+                onClick={handleContinueInput}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#003366',
+                  color: 'white',
+                  border: '1px solid #002244',
+                  borderRadius: '2px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                次の入力へ
+              </button>
+              <button
+                className="btn-primary"
+                onClick={handleViewList}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  border: '1px solid #1565c0',
+                  borderRadius: '2px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                一覧を見る
+              </button>
             </div>
           </div>
         </div>
