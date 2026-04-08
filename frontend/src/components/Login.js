@@ -11,12 +11,15 @@ const Login = ({ onLoginSuccess }) => {
   const [error, setError] = useState('');
   const [agentName, setAgentName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotPinModal, setShowForgotPinModal] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   useEffect(() => {
     // 保存された代理店情報を読み込み
     const authData = getAuthData();
     if (authData) {
       setAgentName(authData.agentName);
+      setRegisteredEmail(authData.email || '');
     }
   }, []);
 
@@ -91,6 +94,11 @@ const Login = ({ onLoginSuccess }) => {
     handleLogin(pinValue);
   };
 
+  // PINを忘れた場合の処理
+  const handleForgotPin = () => {
+    setShowForgotPinModal(true);
+  };
+
   return (
     <div className="login-container">
       <div className="login-card">
@@ -141,12 +149,65 @@ const Login = ({ onLoginSuccess }) => {
           </button>
 
           <div className="login-help">
-            <button type="button" className="forgot-pin-link" onClick={(e) => e.preventDefault()}>
+            <button type="button" className="forgot-pin-link" onClick={handleForgotPin}>
               PINを忘れた方はこちら →
             </button>
           </div>
         </form>
       </div>
+
+      {/* PINを忘れた場合のモーダル */}
+      {showForgotPinModal && (
+        <div className="modal-overlay" onClick={() => setShowForgotPinModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>PINの再発行について</h3>
+            <div className="modal-body">
+              {registeredEmail ? (
+                <>
+                  <p style={{ marginBottom: '16px', color: '#333' }}>
+                    ご登録いただいているメールアドレスは以下の通りです：
+                  </p>
+                  <div style={{ 
+                    padding: '12px', 
+                    backgroundColor: '#f5f5f5', 
+                    borderRadius: '4px',
+                    marginBottom: '16px',
+                    fontWeight: 'bold',
+                    color: '#1976d2'
+                  }}>
+                    {registeredEmail}
+                  </div>
+                  <p style={{ fontSize: '14px', color: '#666' }}>
+                    ⚠️ 現在、PINの自動再発行機能は実装されていません。<br />
+                    新しいPINの発行が必要な場合は、システム管理者までお問い合わせください。
+                  </p>
+                </>
+              ) : (
+                <p style={{ color: '#d32f2f' }}>
+                  ⚠️ メールアドレスが登録されていません。<br />
+                  システム管理者までお問い合わせください。
+                </p>
+              )}
+            </div>
+            <div className="modal-buttons" style={{ marginTop: '20px' }}>
+              <button 
+                onClick={() => setShowForgotPinModal(false)}
+                className="btn-primary"
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
