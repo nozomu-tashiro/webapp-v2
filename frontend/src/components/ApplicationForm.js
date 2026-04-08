@@ -284,6 +284,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     setProgress(0);
     setProgressStep('書類レイアウトを作成しています');
     console.log('Loading state set to true');
+    
+    let pdfSuccess = false; // PDF生成成功フラグ
 
     try {
       const apiUrl = process.env.REACT_APP_API_URL || '';
@@ -367,10 +369,15 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
           console.log('Data saved to IndexedDB with ID:', result.id);
         }
         
-        // 成功モーダルを表示
+        // PDF生成成功フラグを立てる
+        pdfSuccess = true;
+        
+        // プログレスモーダルを閉じてから成功モーダルを表示
+        setLoading(false); // プログレスモーダルを即座に閉じる
+        
         setTimeout(() => {
           setShowSuccessModal(true);
-        }, 500);
+        }, 300); // 短縮して300msに
         
         // ApplicationList更新イベントを発火
         window.dispatchEvent(new Event('applicationSaved'));
@@ -383,6 +390,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
         console.error('Failed to save data to IndexedDB:', saveError);
         // 保存失敗してもPDFは成功しているので、警告のみ
         alert('PDF生成は成功しましたが、データの保存に失敗しました。');
+        pdfSuccess = true; // PDFは成功している
+        setLoading(false); // エラーでもプログレスモーダルを閉じる
       }
       
     } catch (err) {
@@ -401,8 +410,11 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       setError(errorMsg);
       alert(errorMsg);
     } finally {
-      console.log('Setting loading to false');
-      setLoading(false);
+      // PDF生成失敗時のみ loading を false にする（成功時は既に false になっている）
+      if (!pdfSuccess) {
+        console.log('Setting loading to false (PDF generation failed)');
+        setLoading(false);
+      }
     }
   };
 

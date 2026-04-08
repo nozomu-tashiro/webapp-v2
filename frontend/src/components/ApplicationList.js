@@ -43,7 +43,8 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
     return () => {
       window.removeEventListener('applicationSaved', handleApplicationSaved);
     };
-  }, [loadApplications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 初回マウント時のみ実行
 
   // 全選択/全解除
   const handleSelectAll = (e) => {
