@@ -294,18 +294,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       console.log('API URL (final):', apiUrl);
       console.log('Full URL:', `${apiUrl}/api/pdf/generate`);
       
-      // 販売店コードから端末番号（-XXXの部分）を削除
-      const cleanedFormData = { ...formData };
-      if (cleanedFormData.agentInfo.code && cleanedFormData.agentInfo.code.includes('-')) {
-        const parts = cleanedFormData.agentInfo.code.split('-');
-        if (parts.length === 4) {
-          // XX-XX-XXXXXXXX-XXX → XX-XX-XXXXXXXX に変換
-          cleanedFormData.agentInfo.code = `${parts[0]}-${parts[1]}-${parts[2]}`;
-          console.log('🔧 端末番号を削除:', formData.agentInfo.code, '→', cleanedFormData.agentInfo.code);
-        }
-      }
-      
-      console.log('Form Data:', JSON.stringify(cleanedFormData, null, 2));
+      console.log('Form Data:', JSON.stringify(formData, null, 2));
       console.log('===========================');
       
       // プログレスバーのアニメーション
@@ -635,8 +624,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '').slice(0, 2);
                   handleNestedChange('agentInfo', 'codePart1', value);
-                  // 完全なコードを組み立て
-                  const fullCode = `${value}-${formData.agentInfo.codePart2}-${formData.agentInfo.codePart3}`;
+                  // 完全なコードを組み立て（端末番号も含める）
+                  const fullCode = `${value}-${formData.agentInfo.codePart2}-${formData.agentInfo.codePart3}-${formData.agentInfo.codePart4}`;
                   handleNestedChange('agentInfo', 'code', fullCode);
                 }}
                 className="form-input code-part"
@@ -650,8 +639,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '').slice(0, 2);
                   handleNestedChange('agentInfo', 'codePart2', value);
-                  // 完全なコードを組み立て
-                  const fullCode = `${formData.agentInfo.codePart1}-${value}-${formData.agentInfo.codePart3}`;
+                  // 完全なコードを組み立て（端末番号も含める）
+                  const fullCode = `${formData.agentInfo.codePart1}-${value}-${formData.agentInfo.codePart3}-${formData.agentInfo.codePart4}`;
                   handleNestedChange('agentInfo', 'code', fullCode);
                 }}
                 className="form-input code-part"
@@ -665,8 +654,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                   handleNestedChange('agentInfo', 'codePart3', value);
-                  // 完全なコードを組み立て
-                  const fullCode = `${formData.agentInfo.codePart1}-${formData.agentInfo.codePart2}-${value}`;
+                  // 完全なコードを組み立て（端末番号も含める）
+                  const fullCode = `${formData.agentInfo.codePart1}-${formData.agentInfo.codePart2}-${value}-${formData.agentInfo.codePart4}`;
                   handleNestedChange('agentInfo', 'code', fullCode);
                 }}
                 className="form-input code-part code-part-long"
@@ -680,19 +669,18 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                   handleNestedChange('agentInfo', 'codePart4', value);
-                  // 端末番号は表示用のみで、code には含めない
+                  // 完全なコードを組み立て（端末番号も含める）
+                  const fullCode = `${formData.agentInfo.codePart1}-${formData.agentInfo.codePart2}-${formData.agentInfo.codePart3}-${value}`;
+                  handleNestedChange('agentInfo', 'code', fullCode);
                 }}
                 className="form-input code-part"
                 placeholder="000"
                 maxLength="3"
               />
             </div>
-            <div className="code-hint">
-              ※ 端末番号（最後の3桁）は自動的に削除されます
-            </div>
-            {formData.agentInfo.codePart4 && formData.agentInfo.code && !/^\d{2}-\d{2}-\d{1,10}$/.test(formData.agentInfo.code) && (
+            {formData.agentInfo.codePart4 && formData.agentInfo.code && !/^\d{2}-\d{2}-\d{1,10}-\d{3}$/.test(formData.agentInfo.code) && (
               <div className="warning-message">
-                ⚠️ 形式が正しくありません。正しい形式: XX-XX-最大10桁（例: 13-00-00000）
+                ⚠️ 形式が正しくありません。正しい形式: XX-XX-最大10桁-XXX（例: 13-00-00000-000）
               </div>
             )}
           </div>

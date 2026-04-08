@@ -87,8 +87,9 @@ export const validateAgentCode = (code) => {
   
   const parts = code.split('-');
   
-  if (parts.length !== 3) {
-    return { valid: false, error: '代理店コードは XX-XX-XXXXXXXXXX の形式で入力してください（例: 13-00-00000）' };
+  // 3パート形式（XX-XX-XXXXXXXXXX）または4パート形式（XX-XX-XXXXXXXXXX-XXX）を許可
+  if (parts.length !== 3 && parts.length !== 4) {
+    return { valid: false, error: '代理店コードは XX-XX-XXXXXXXXXX-XXX の形式で入力してください（例: 13-00-00000-000）' };
   }
   
   // 第1部: 都道府県コード（2桁）
@@ -104,6 +105,11 @@ export const validateAgentCode = (code) => {
   // 第3部: 会員番号（1〜10桁）
   if (!/^[0-9]{1,10}$/.test(parts[2])) {
     return { valid: false, error: '会員番号は1〜10桁の数字で入力してください' };
+  }
+  
+  // 第4部: 端末番号（3桁）- 存在する場合のみチェック
+  if (parts.length === 4 && !/^[0-9]{3}$/.test(parts[3])) {
+    return { valid: false, error: '端末番号は3桁の数字で入力してください' };
   }
   
   return { valid: true };

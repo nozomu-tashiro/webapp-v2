@@ -65,8 +65,8 @@ const Register = ({ onRegisterSuccess }) => {
       newErrors.agentName = '代理店名を入力してください';
     }
 
-    // 代理店コード
-    const agentCode = `${formData.agentCodePart1}-${formData.agentCodePart2}-${formData.agentCodePart3}`;
+    // 代理店コード（端末番号を含む）
+    const agentCode = `${formData.agentCodePart1}-${formData.agentCodePart2}-${formData.agentCodePart3}-${formData.agentCodePart4}`;
     const codeValidation = validateAgentCode(agentCode);
     if (!codeValidation.valid) {
       newErrors.agentCode = codeValidation.error;
@@ -115,7 +115,7 @@ const Register = ({ onRegisterSuccess }) => {
     setLoading(true);
 
     try {
-      const agentCode = `${formData.agentCodePart1}-${formData.agentCodePart2}-${formData.agentCodePart3}`;
+      const agentCode = `${formData.agentCodePart1}-${formData.agentCodePart2}-${formData.agentCodePart3}-${formData.agentCodePart4}`;
       
       saveAuthData(
         agentCode,
@@ -202,7 +202,7 @@ const Register = ({ onRegisterSuccess }) => {
                 className={`code-input ${errors.agentCode ? 'input-error' : ''}`}
               />
             </div>
-            <small className="help-text">※当社から発行された代理店コード（端末番号は自動的に削除されます）</small>
+            <small className="help-text">※当社から発行された代理店コード（4つの番号すべてを入力してください）</small>
             {errors.agentCode && <span className="error-text">{errors.agentCode}</span>}
           </div>
 
@@ -299,8 +299,7 @@ const Register = ({ onRegisterSuccess }) => {
             <h3>登録内容の最終確認</h3>
             <div className="confirm-details">
               <p><strong>代理店名:</strong> {formData.agentName}</p>
-              <p><strong>代理店コード:</strong> {formData.agentCodePart1}-{formData.agentCodePart2}-{formData.agentCodePart3}</p>
-              <p><strong>端末番号:</strong> {formData.agentCodePart4}</p>
+              <p><strong>代理店コード:</strong> {formData.agentCodePart1}-{formData.agentCodePart2}-{formData.agentCodePart3}-{formData.agentCodePart4}</p>
               <p><strong>メールアドレス:</strong> {formData.email}</p>
             </div>
             <div className="warning-text">
