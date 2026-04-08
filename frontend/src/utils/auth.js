@@ -78,6 +78,8 @@ export const logout = () => {
 };
 
 // 代理店コードのバリデーション
+// フォーマット: XX-XX-XXXXXXXXXX (都道府県コード2桁-地域コード2桁-会員番号最大10桁)
+// ※ 端末番号(3桁)は表示のみで、保存時は含めない
 export const validateAgentCode = (code) => {
   if (!code || code.trim() === '') {
     return { valid: false, error: '代理店コードを入力してください' };
@@ -86,22 +88,22 @@ export const validateAgentCode = (code) => {
   const parts = code.split('-');
   
   if (parts.length !== 3) {
-    return { valid: false, error: '代理店コードは XX-XXXXXXXXXX-XXX の形式で入力してください' };
+    return { valid: false, error: '代理店コードは XX-XX-XXXXXXXXXX の形式で入力してください（例: 13-00-00000）' };
   }
   
-  // 第1部: 1-2桁の数字
-  if (!/^[0-9]{1,2}$/.test(parts[0])) {
-    return { valid: false, error: 'エリアコードは1〜2桁の数字で入力してください' };
+  // 第1部: 都道府県コード（2桁）
+  if (!/^[0-9]{2}$/.test(parts[0])) {
+    return { valid: false, error: '都道府県コードは2桁の数字で入力してください' };
   }
   
-  // 第2部: 1-10桁の数字
-  if (!/^[0-9]{1,10}$/.test(parts[1])) {
-    return { valid: false, error: '代理店IDは1〜10桁の数字で入力してください' };
+  // 第2部: 地域コード（2桁）
+  if (!/^[0-9]{2}$/.test(parts[1])) {
+    return { valid: false, error: '地域コードは2桁の数字で入力してください' };
   }
   
-  // 第3部: 1-3桁の数字
-  if (!/^[0-9]{1,3}$/.test(parts[2])) {
-    return { valid: false, error: '支店番号は1〜3桁の数字で入力してください' };
+  // 第3部: 会員番号（1〜10桁）
+  if (!/^[0-9]{1,10}$/.test(parts[2])) {
+    return { valid: false, error: '会員番号は1〜10桁の数字で入力してください' };
   }
   
   return { valid: true };
