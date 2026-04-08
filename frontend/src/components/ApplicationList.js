@@ -18,29 +18,39 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
 
   // データ読み込み
   const loadApplications = async () => {
+    console.log('🔄 loadApplications() called');
+    console.log('👤 currentUser:', currentUser);
     try {
       setLoading(true);
+      console.log('⏳ Loading set to true, fetching data...');
       const data = await getApplicationsByAgent(currentUser.agentCode);
+      console.log('✅ Data fetched:', data);
       setApplications(data);
+      console.log('📊 Applications state updated');
     } catch (error) {
-      console.error('データ読み込みエラー:', error);
+      console.error('❌ データ読み込みエラー:', error);
       alert('データの読み込みに失敗しました');
     } finally {
+      console.log('🏁 Setting loading to false');
       setLoading(false);
+      console.log('✅ Loading set to false');
     }
   };
 
   useEffect(() => {
+    console.log('🎬 ApplicationList useEffect triggered');
     loadApplications();
     
     // 新規保存時にリストを更新
     const handleApplicationSaved = () => {
+      console.log('💾 applicationSaved event received');
       loadApplications();
     };
     
     window.addEventListener('applicationSaved', handleApplicationSaved);
     
     return () => {
+      console.log('🧹 Cleaning up applicationSaved event listener');
       window.removeEventListener('applicationSaved', handleApplicationSaved);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
