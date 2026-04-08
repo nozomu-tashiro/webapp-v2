@@ -4,6 +4,7 @@ import {
   verifyLogin,
   validatePin
 } from '../utils/auth';
+import { deleteAllApplications } from '../utils/indexedDB';
 import '../styles/Login.css';
 
 const Login = ({ onLoginSuccess }) => {
@@ -99,6 +100,39 @@ const Login = ({ onLoginSuccess }) => {
     setShowForgotPinModal(true);
   };
 
+  // 再登録処理
+  const handleReRegister = async () => {
+    const confirmMessage = 
+      '再登録すると、以下のデータが削除されます：\n' +
+      '• 現在の認証情報（PIN、メールアドレス）\n' +
+      '• 保存済みの申込データ（PDF/CSV未出力分）\n\n' +
+      '※ PDF/CSV出力済みのデータは影響ありません。\n\n' +
+      '本当に続けますか？';
+    
+    if (window.confirm(confirmMessage)) {
+      try {
+        setLoading(true);
+        
+        // IndexedDBの全データを削除
+        await deleteAllApplications();
+        
+        // localStorageの認証データを削除
+        localStorage.removeItem('auth_data');
+        sessionStorage.clear();
+        
+        alert('古いデータを削除しました。新規登録画面に移動します。');
+        
+        // ページをリロードして登録画面に戻る
+        window.location.href = '/';
+      } catch (error) {
+        console.error('データ削除エラー:', error);
+        alert('データの削除に失敗しました。ブラウザのキャッシュをクリアしてから再度お試しください。');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <div className="login-container">
       <div className="login-card">
@@ -165,7 +199,7 @@ const Login = ({ onLoginSuccess }) => {
               {registeredEmail ? (
                 <>
                   <p style={{ marginBottom: '16px', color: '#333' }}>
-                    ご登録いただいているメールアドレスは以下の通りです：
+                    ご登録いただいているメールアドレス：
                   </p>
                   <div style={{ 
                     padding: '12px', 
@@ -177,32 +211,73 @@ const Login = ({ onLoginSuccess }) => {
                   }}>
                     {registeredEmail}
                   </div>
-                  <p style={{ fontSize: '14px', color: '#666' }}>
-                    ⚠️ 現在、PINの自動再発行機能は実装されていません。<br />
-                    新しいPINの発行が必要な場合は、システム管理者までお問い合わせください。
-                  </p>
+                  <div style={{ 
+                    padding: '16px', 
+                    backgroundColor: '#fff3e0', 
+                    borderRadius: '4px',
+                    marginBottom: '16px',
+                    fontSize: '14px',
+                    lineHeight: '1.6'
+                  }}>
+                    <p style={{ margin: '0 0 12px 0', fontWeight: 'bold' }}>
+                      ⚠️ PINを失念した場合は、再度登録しなおしてください。
+                    </p>
+                    <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>
+                      【重要】再登録すると、以下のデータが削除されます：
+                    </p>
+                    <ul style={{ margin: '0 0 8px 0', paddingLeft: '20px' }}>
+                      <li>現在の認証情報（PIN、メールアドレス）</li>
+                      <li>保存済みの申込データ（PDF/CSV未出力分）</li>
+                    </ul>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
+                      ※ PDF/CSV出力済みのデータは影響ありません。
+                    </p>
+                  </div>
                 </>
               ) : (
-                <p style={{ color: '#d32f2f' }}>
-                  ⚠️ メールアドレスが登録されていません。<br />
-                  システム管理者までお問い合わせください。
-                </p>
+                <div style={{ 
+                  padding: '16px', 
+                  backgroundColor: '#ffebee', 
+                  borderRadius: '4px',
+                  marginBottom: '16px'
+                }}>
+                  <p style={{ color: '#d32f2f', margin: 0 }}>
+                    ⚠️ メールアドレスが登録されていません。<br />
+                    再登録が必要です。
+                  </p>
+                </div>
               )}
             </div>
-            <div className="modal-buttons" style={{ marginTop: '20px' }}>
+            <div className="modal-buttons" style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <button 
                 onClick={() => setShowForgotPinModal(false)}
-                className="btn-primary"
+                className="btn-secondary"
                 style={{
                   padding: '10px 24px',
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  border: 'none',
+                  backgroundColor: '#f5f5f5',
+                  color: '#666',
+                  border: '1px solid #ddd',
                   borderRadius: '4px',
                   cursor: 'pointer'
                 }}
               >
                 閉じる
+              </button>
+              <button 
+                onClick={handleReRegister}
+                className="btn-primary"
+                disabled={loading}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: '#d32f2f',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.6 : 1
+                }}
+              >
+                {loading ? '削除中...' : '再登録画面へ'}
               </button>
             </div>
           </div>

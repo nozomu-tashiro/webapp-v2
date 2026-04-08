@@ -216,7 +216,7 @@ const Register = ({ onRegisterSuccess }) => {
               placeholder="info@example.com"
               className={errors.email ? 'input-error' : ''}
             />
-            <small className="help-text">※PINを忘れた時の復旧に使用</small>
+            <small className="help-text">※正確なメールアドレスを入力してください。</small>
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
 
@@ -279,8 +279,9 @@ const Register = ({ onRegisterSuccess }) => {
           <div className="warning-box">
             <strong>⚠️ 重要な注意事項:</strong>
             <p>
-              登録したメールアドレスを忘れてしまうと、PINの再発行はできませんので、
-              入力間違いや失念に十分ご注意ください。
+              PINを忘れると再登録が必要になり、PDF/CSV出力して保存していないデータは削除されます。<br />
+              データ損失を防ぐため、こまめにPDF/CSV出力して保存ください。<br />
+              メールアドレスとPINは必ず正確に入力し、忘れないよう控えてください。
             </p>
           </div>
 
@@ -303,7 +304,9 @@ const Register = ({ onRegisterSuccess }) => {
               <p><strong>メールアドレス:</strong> {formData.email}</p>
             </div>
             <div className="warning-text">
-              ⚠️ 特にメールアドレスは慎重にご確認ください
+              ⚠️ PINを忘れると再登録が必要になり、PDF/CSV出力して保存していないデータは削除されます。<br />
+              データ損失を防ぐため、こまめにPDF/CSV出力して保存ください。<br />
+              メールアドレスとPINは必ず正確に入力し、忘れないよう控えてください。
             </div>
             <p>上記の内容で登録してよろしいですか？</p>
             <div className="modal-buttons">

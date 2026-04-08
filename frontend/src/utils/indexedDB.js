@@ -301,3 +301,19 @@ export const getApplicationCount = async (agentCode) => {
     return 0;
   }
 };
+
+// 全データを削除（再登録時に使用）
+export const deleteAllApplications = async () => {
+  try {
+    const db = await openDB();
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    
+    await store.clear(); // 全データ削除
+    
+    return { success: true };
+  } catch (error) {
+    console.error('全データ削除エラー:', error);
+    throw new Error('データの削除に失敗しました');
+  }
+};
