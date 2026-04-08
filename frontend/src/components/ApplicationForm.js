@@ -690,7 +690,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             <div className="code-hint">
               ※ 端末番号（最後の3桁）は自動的に削除されます
             </div>
-            {formData.agentInfo.code && !/^\d{2}-\d{2}-\d{1,10}$/.test(formData.agentInfo.code) && (
+            {formData.agentInfo.codePart4 && formData.agentInfo.code && !/^\d{2}-\d{2}-\d{1,10}$/.test(formData.agentInfo.code) && (
               <div className="warning-message">
                 ⚠️ 形式が正しくありません。正しい形式: XX-XX-最大10桁（例: 13-00-00000）
               </div>
