@@ -13,6 +13,7 @@ const Register = ({ onRegisterSuccess }) => {
     agentCodePart1: '',
     agentCodePart2: '',
     agentCodePart3: '',
+    agentCodePart4: '',
     email: '',
     emailConfirm: '',
     pin: '',
@@ -45,8 +46,9 @@ const Register = ({ onRegisterSuccess }) => {
     // 最大桁数に達したら次のフィールドへ
     const maxLengths = {
       agentCodePart1: 2,
-      agentCodePart2: 10,
-      agentCodePart3: 3
+      agentCodePart2: 2,
+      agentCodePart3: 10,
+      agentCodePart4: 3
     };
 
     if (value.length === maxLengths[part] && nextPartName) {
@@ -171,25 +173,36 @@ const Register = ({ onRegisterSuccess }) => {
                 id="agentCodePart2"
                 type="text"
                 inputMode="numeric"
-                maxLength="10"
+                maxLength="2"
                 value={formData.agentCodePart2}
                 onChange={(e) => handleAgentCodeChange('agentCodePart2', e.target.value, 'agentCodePart3')}
-                placeholder="12345"
-                className={`code-input code-input-long ${errors.agentCode ? 'input-error' : ''}`}
+                placeholder="00"
+                className={`code-input ${errors.agentCode ? 'input-error' : ''}`}
               />
               <span className="code-separator">-</span>
               <input
                 id="agentCodePart3"
                 type="text"
                 inputMode="numeric"
-                maxLength="3"
+                maxLength="10"
                 value={formData.agentCodePart3}
-                onChange={(e) => handleAgentCodeChange('agentCodePart3', e.target.value)}
-                placeholder="001"
+                onChange={(e) => handleAgentCodeChange('agentCodePart3', e.target.value, 'agentCodePart4')}
+                placeholder="00000"
+                className={`code-input code-input-long ${errors.agentCode ? 'input-error' : ''}`}
+              />
+              <span className="code-separator">-</span>
+              <input
+                id="agentCodePart4"
+                type="text"
+                inputMode="numeric"
+                maxLength="3"
+                value={formData.agentCodePart4}
+                onChange={(e) => handleAgentCodeChange('agentCodePart4', e.target.value)}
+                placeholder="000"
                 className={`code-input ${errors.agentCode ? 'input-error' : ''}`}
               />
             </div>
-            <small className="help-text">※当社から発行された代理店コード</small>
+            <small className="help-text">※当社から発行された代理店コード（端末番号は自動的に削除されます）</small>
             {errors.agentCode && <span className="error-text">{errors.agentCode}</span>}
           </div>
 
@@ -287,6 +300,7 @@ const Register = ({ onRegisterSuccess }) => {
             <div className="confirm-details">
               <p><strong>代理店名:</strong> {formData.agentName}</p>
               <p><strong>代理店コード:</strong> {formData.agentCodePart1}-{formData.agentCodePart2}-{formData.agentCodePart3}</p>
+              <p><strong>端末番号:</strong> {formData.agentCodePart4}</p>
               <p><strong>メールアドレス:</strong> {formData.email}</p>
             </div>
             <div className="warning-text">
