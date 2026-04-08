@@ -317,7 +317,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       setTimeout(() => setProgressStep('最終調整をしています'), 8000);
       
       console.log('Sending POST request...');
-      const response = await axios.post(`${apiUrl}/api/pdf/generate`, cleanedFormData, {
+      const response = await axios.post(`${apiUrl}/api/pdf/generate`, formData, {
         responseType: 'blob',
         timeout: 120000 // 120秒（2分）のタイムアウト - Render.comのコールドスタート対応
       });
@@ -342,18 +342,18 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
       console.log('PDF download complete!');
       
-      // データをIndexedDBに保存または更新（端末番号削除済みのデータを使用）
+      // データをIndexedDBに保存または更新（端末番号も含めて保存）
       try {
         const agentCode = currentUser?.agentCode || 'unknown';
         
         if (editingId) {
           // 編集モード：既存データを更新
-          await updateApplication(editingId, cleanedFormData);
+          await updateApplication(editingId, formData);
           setSavedDataId(editingId);
           console.log('Data updated in IndexedDB with ID:', editingId);
         } else {
           // 新規作成モード：新しいデータを追加
-          const result = await saveApplication(cleanedFormData, agentCode);
+          const result = await saveApplication(formData, agentCode);
           setSavedDataId(result.id);
           console.log('Data saved to IndexedDB with ID:', result.id);
         }
