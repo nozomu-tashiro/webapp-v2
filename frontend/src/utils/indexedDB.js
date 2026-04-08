@@ -47,7 +47,9 @@ export const saveApplication = async (formData, agentCode) => {
       agentCode,
       formData,
       timestamp: new Date().toISOString(),
-      submitted: false, // 提出済みフラグ
+      submitted: false, // 提出済みフラグ（後方互換性のため残す）
+      csvExported: false, // CSV出力済みフラグ
+      csvExportedAt: null, // CSV出力日時
       pdfGenerated: true
     };
     
@@ -67,7 +69,7 @@ export const saveApplication = async (formData, agentCode) => {
   }
 };
 
-// 代理店の全データを取得（未提出のみ）
+// 代理店の全データを取得
 export const getApplicationsByAgent = async (agentCode) => {
   try {
     const db = await openDB();
@@ -79,10 +81,9 @@ export const getApplicationsByAgent = async (agentCode) => {
     
     return new Promise((resolve, reject) => {
       request.onsuccess = () => {
-        // 未提出のデータのみフィルタリング
+        // 全データを返す（CSV出力済みも含む）
         const allData = request.result || [];
-        const unsubmittedData = allData.filter(item => !item.submitted);
-        resolve(unsubmittedData);
+        resolve(allData);
       };
       request.onerror = () => {
         reject(new Error('データの取得に失敗しました'));
@@ -224,11 +225,14 @@ export const markAllAsSubmitted = async (agentCode) => {
     return new Promise((resolve, reject) => {
       request.onsuccess = () => {
         const allData = request.result || [];
+        const now = new Date().toISOString();
         const updatePromises = allData
-          .filter(item => !item.submitted)
+          .filter(item => !item.csvExported && !item.submitted) // CSV未出力のデータのみ
           .map(item => {
-            item.submitted = true;
-            item.submittedAt = new Date().toISOString();
+            item.submitted = true; // 後方互換性のため残す
+            item.submittedAt = now;
+            item.csvExported = true; // CSV出力済みフラグ
+            item.csvExportedAt = now; // CSV出力日時
             return store.put(item);
           });
         
@@ -264,10 +268,11 @@ export const cleanupOldData = async () => {
         
         const deletePromises = allData
           .filter(item => {
-            // CSV出力済み（submitted=true）かつ出力日から3日以上経過したデータを削除
-            if (!item.submitted || !item.submittedAt) return false;
-            const submittedDate = new Date(item.submittedAt);
-            return submittedDate < threeDaysAgo;
+            // CSV出力済み（csvExported=true）かつ出力日から3日以上経過したデータを削除
+            if (!item.csvExported && !item.submitted) return false; // 両方チェック（後方互換性）
+            const exportedDate = item.csvExportedAt ? new Date(item.csvExportedAt) : (item.submittedAt ? new Date(item.submittedAt) : null);
+            if (!exportedDate) return false;
+            return exportedDate < threeDaysAgo;
           })
           .map(item => store.delete(item.id));
         

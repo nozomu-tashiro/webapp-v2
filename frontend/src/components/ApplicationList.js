@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   getApplicationsByAgent,
   deleteApplication,
-  markAllAsSubmitted
+  markAllAsSubmitted,
+  cleanupOldData
 } from '../utils/indexedDB';
 import { getCurrentUser } from '../utils/auth';
 import { convertToCSV, downloadCSV } from '../utils/csvExport';
@@ -39,6 +40,12 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
 
   useEffect(() => {
     console.log('🎬 ApplicationList useEffect triggered');
+    
+    // 古いデータを削除（3日以上経過したCSV出力済みデータ）
+    cleanupOldData()
+      .then(() => console.log('🧹 Old data cleanup completed'))
+      .catch((error) => console.error('❌ Cleanup error:', error));
+    
     loadApplications();
     
     // 新規保存時にリストを更新
@@ -117,9 +124,9 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
 
   // 出力済みデータを一括削除
   const handleDeleteSubmitted = async () => {
-    const submittedApps = applications.filter(app => app.submitted);
+    const submittedApps = applications.filter(app => app.csvExported || app.submitted);
     if (submittedApps.length === 0) {
-      alert('出力済みデータがありません');
+      alert('CSV出力済みデータがありません');
       return;
     }
 
@@ -140,9 +147,9 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
 
   // CSV出力（未出力データのみ）
   const handleCSVExport = () => {
-    const unsubmittedApps = applications.filter(app => !app.submitted);
+    const unexportedApps = applications.filter(app => !app.csvExported && !app.submitted);
     
-    if (unsubmittedApps.length === 0) {
+    if (unexportedApps.length === 0) {
       alert('未出力のデータがありません。\nすべてのデータは既にCSV出力済みです。');
       return;
     }
@@ -153,21 +160,21 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
   // CSV ダウンロード（未出力データのみ）
   const handleDownloadCSV = async () => {
     try {
-      const unsubmittedApps = applications.filter(app => !app.submitted);
+      const unexportedApps = applications.filter(app => !app.csvExported && !app.submitted);
       
-      if (unsubmittedApps.length === 0) {
+      if (unexportedApps.length === 0) {
         alert('未出力のデータがありません');
         return;
       }
 
-      const csvContent = convertToCSV(unsubmittedApps, currentUser.agentCode, currentUser.agentName);
+      const csvContent = convertToCSV(unexportedApps, currentUser.agentCode, currentUser.agentName);
       if (csvContent) {
         downloadCSV(csvContent, currentUser.agentCode, currentUser.agentName);
         
         // 出力済みフラグを立てる
         await markAllAsSubmitted(currentUser.agentCode);
         
-        alert(`CSVファイルをダウンロードしました。\n出力件数: ${unsubmittedApps.length}件\n\n※このデータは3日後に自動削除されます。`);
+        alert(`CSVファイルをダウンロードしました。\n出力件数: ${unexportedApps.length}件\n\n※このデータは3日後に自動削除されます。`);
         setShowSubmitDialog(false);
         loadApplications(); // リスト更新
       }
@@ -202,6 +209,17 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // CSV出力後の残り日数を計算
+  const getRemainingDays = (csvExportedAt) => {
+    if (!csvExportedAt) return null;
+    const exportedDate = new Date(csvExportedAt);
+    const now = new Date();
+    const deleteDate = new Date(exportedDate.getTime() + 3 * 24 * 60 * 60 * 1000); // 3日後
+    const remainingMs = deleteDate.getTime() - now.getTime();
+    const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
+    return remainingDays > 0 ? remainingDays : 0;
   };
 
   // 商品名を取得
@@ -282,9 +300,14 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
         <h2>登録済みデータ一覧</h2>
         <div className="list-stats">
           現在の登録件数: <strong>{applications.length}件</strong>
-          {applications.filter(app => !app.submitted).length > 0 && (
+          {applications.filter(app => !app.csvExported && !app.submitted).length > 0 && (
             <span className="unsubmitted-count">
-              （未出力: <strong>{applications.filter(app => !app.submitted).length}件</strong>）
+              （未出力: <strong>{applications.filter(app => !app.csvExported && !app.submitted).length}件</strong>）
+            </span>
+          )}
+          {applications.filter(app => app.csvExported || app.submitted).length > 0 && (
+            <span className="submitted-count" style={{ marginLeft: '8px', color: '#666' }}>
+              （CSV出力済: <strong>{applications.filter(app => app.csvExported || app.submitted).length}件</strong>）
             </span>
           )}
         </div>
@@ -324,7 +347,7 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
               </thead>
               <tbody>
                 {applications.map((app, index) => (
-                  <tr key={app.id} className={app.submitted ? 'submitted-row' : ''}>
+                  <tr key={app.id} className={(app.csvExported || app.submitted) ? 'submitted-row' : ''}>
                     <td className="checkbox-cell">
                       <input
                         type="checkbox"
@@ -359,13 +382,31 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
                       )}
                     </td>
                     <td className="status-cell">
-                      {app.submitted ? (
+                      {app.csvExported || app.submitted ? (
                         <div className="status-submitted">
                           <span className="status-icon">✅</span>
-                          <span className="status-text">出力済</span>
+                          <span className="status-text">CSV出力済</span>
                           <div className="submitted-date">
-                            {formatDateTime(app.submittedAt)}
+                            {formatDateTime(app.csvExportedAt || app.submittedAt)}
                           </div>
+                          {(() => {
+                            const remainingDays = getRemainingDays(app.csvExportedAt || app.submittedAt);
+                            if (remainingDays !== null && remainingDays >= 0) {
+                              return (
+                                <div className="deletion-warning" style={{
+                                  fontSize: '11px',
+                                  color: remainingDays === 0 ? '#d32f2f' : '#ff6f00',
+                                  marginTop: '4px',
+                                  fontWeight: 'bold'
+                                }}>
+                                  {remainingDays === 0 
+                                    ? '⚠️ 本日削除予定' 
+                                    : `🗑️ あと${remainingDays}日で削除`}
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
                         </div>
                       ) : (
                         <div className="status-pending">
@@ -377,14 +418,14 @@ const ApplicationList = ({ onEdit, onRegeneratePDF }) => {
                     <td className="action-cell">
                       <button
                         onClick={() => {
-                          if (app.submitted) {
+                          if (app.csvExported || app.submitted) {
                             alert('⚠️ このデータは既にCSV出力済みです。\n編集はできません。\n\n再度編集が必要な場合は、新規データとして再登録してください。');
                           } else {
                             onEdit(app);
                           }
                         }}
                         className={app.submitted ? 'btn-edit btn-disabled' : 'btn-edit'}
-                        title={app.submitted ? 'CSV出力済みのため編集不可' : '編集'}
+                        title={(app.csvExported || app.submitted) ? 'CSV出力済みのため編集不可' : '編集'}
                         disabled={app.submitted}
                       >
                         編集
