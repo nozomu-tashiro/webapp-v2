@@ -1,8 +1,146 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../styles/ApplicationForm.css';
 import { saveApplication, updateApplication } from '../utils/indexedDB';
 import { getCurrentUser } from '../utils/auth';
+
+// カスタム日付入力コンポーネント（年4桁→月2桁→日2桁で自動フォーカス移動）
+const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} }) => {
+  const [year, setYear] = useState('');
+  const [month, setMonth] = useState('');
+  const [day, setDay] = useState('');
+  
+  const yearRef = useRef(null);
+  const monthRef = useRef(null);
+  const dayRef = useRef(null);
+
+  // 外部からのvalue（YYYY-MM-DD形式）を分割してstate更新
+  useEffect(() => {
+    if (value && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [y, m, d] = value.split('-');
+      setYear(y);
+      setMonth(m);
+      setDay(d);
+    } else if (!value) {
+      setYear('');
+      setMonth('');
+      setDay('');
+    }
+  }, [value]);
+
+  // 年・月・日が揃ったら親コンポーネントに通知
+  const updateParent = (newYear, newMonth, newDay) => {
+    if (newYear.length === 4 && newMonth.length === 2 && newDay.length === 2) {
+      const fullDate = `${newYear}-${newMonth}-${newDay}`;
+      onChange(fullDate);
+    } else if (!newYear && !newMonth && !newDay) {
+      onChange('');
+    }
+  };
+
+  const handleYearChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setYear(val);
+    if (val.length === 4) {
+      monthRef.current?.focus();
+    }
+    updateParent(val, month, day);
+  };
+
+  const handleMonthChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    setMonth(val);
+    if (val.length === 2) {
+      dayRef.current?.focus();
+    }
+    updateParent(year, val, day);
+  };
+
+  const handleDayChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    setDay(val);
+    updateParent(year, month, val);
+  };
+
+  const handleYearKeyDown = (e) => {
+    if (e.key === 'Backspace' && year.length === 0) {
+      // 何もしない（最初の欄なので戻る場所なし）
+    }
+  };
+
+  const handleMonthKeyDown = (e) => {
+    if (e.key === 'Backspace' && month.length === 0) {
+      yearRef.current?.focus();
+    }
+  };
+
+  const handleDayKeyDown = (e) => {
+    if (e.key === 'Backspace' && day.length === 0) {
+      monthRef.current?.focus();
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', ...style }}>
+      <input
+        ref={yearRef}
+        type="text"
+        inputMode="numeric"
+        value={year}
+        onChange={handleYearChange}
+        onKeyDown={handleYearKeyDown}
+        placeholder="2024"
+        disabled={disabled}
+        style={{
+          width: '60px',
+          padding: '8px',
+          border: '1px solid #ddd',
+          borderRadius: '4px',
+          fontSize: '14px',
+          backgroundColor: disabled ? '#f5f5f5' : 'white'
+        }}
+      />
+      <span style={{ fontSize: '16px', color: '#666' }}>/</span>
+      <input
+        ref={monthRef}
+        type="text"
+        inputMode="numeric"
+        value={month}
+        onChange={handleMonthChange}
+        onKeyDown={handleMonthKeyDown}
+        placeholder="01"
+        disabled={disabled}
+        style={{
+          width: '40px',
+          padding: '8px',
+          border: '1px solid #ddd',
+          borderRadius: '4px',
+          fontSize: '14px',
+          backgroundColor: disabled ? '#f5f5f5' : 'white'
+        }}
+      />
+      <span style={{ fontSize: '16px', color: '#666' }}>/</span>
+      <input
+        ref={dayRef}
+        type="text"
+        inputMode="numeric"
+        value={day}
+        onChange={handleDayChange}
+        onKeyDown={handleDayKeyDown}
+        placeholder="01"
+        disabled={disabled}
+        style={{
+          width: '40px',
+          padding: '8px',
+          border: '1px solid #ddd',
+          borderRadius: '4px',
+          fontSize: '14px',
+          backgroundColor: disabled ? '#f5f5f5' : 'white'
+        }}
+      />
+    </div>
+  );
+};
 
 const ApplicationForm = ({ editMode = false, editData = null, editingId = null, onSaveComplete = null }) => {
   // 認証情報を取得
@@ -987,12 +1125,9 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 <label className="form-label">
                   生年月日
                 </label>
-                <input
-                  type="date"
-                  name="birthDate"
+                <CustomDateInput
                   value={formData.birthDate}
-                  onChange={handleInputChange}
-                  className="form-input"
+                  onChange={(dateStr) => setFormData({ ...formData, birthDate: dateStr })}
                 />
               </div>
 
@@ -1147,13 +1282,10 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
                   <div className="form-row">
                     <label className="form-label">生年月日</label>
-                    <input
-                      type="date"
+                    <CustomDateInput
                       value={resident.birthDate || ''}
-                      onChange={(e) => updateResident(index, 'birthDate', e.target.value)}
-                      className="form-input"
+                      onChange={(dateStr) => updateResident(index, 'birthDate', dateStr)}
                       disabled={resident.sameAsApplicant}
-                      style={{ backgroundColor: resident.sameAsApplicant ? '#f5f5f5' : 'white' }}
                     />
                   </div>
 
