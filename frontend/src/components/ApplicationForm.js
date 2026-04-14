@@ -62,6 +62,24 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
     updateParent(year, month, val);
   };
 
+  // 月のフィールドからフォーカスが外れたときに自動0埋め
+  const handleMonthBlur = () => {
+    if (month.length === 1 && month !== '') {
+      const paddedMonth = '0' + month;
+      setMonth(paddedMonth);
+      updateParent(year, paddedMonth, day);
+    }
+  };
+
+  // 日のフィールドからフォーカスが外れたときに自動0埋め
+  const handleDayBlur = () => {
+    if (day.length === 1 && day !== '') {
+      const paddedDay = '0' + day;
+      setDay(paddedDay);
+      updateParent(year, month, paddedDay);
+    }
+  };
+
   const handleYearKeyDown = (e) => {
     if (e.key === 'Backspace' && year.length === 0) {
       // 何もしない（最初の欄なので戻る場所なし）
@@ -107,6 +125,7 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
         inputMode="numeric"
         value={month}
         onChange={handleMonthChange}
+        onBlur={handleMonthBlur}
         onKeyDown={handleMonthKeyDown}
         placeholder="01"
         disabled={disabled}
@@ -126,6 +145,7 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
         inputMode="numeric"
         value={day}
         onChange={handleDayChange}
+        onBlur={handleDayBlur}
         onKeyDown={handleDayKeyDown}
         placeholder="01"
         disabled={disabled}
