@@ -357,7 +357,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       homePhone: '',
       birthDate: '',
       gender: '',
-      residents: [],
+      residents: [{ name: '', nameKana: '', relationship: '', birthDate: '', sameAsApplicant: false }], // デフォルトで1人追加
       propertyAddress: '',
       propertyName: '',
       propertyNameKana: '',
