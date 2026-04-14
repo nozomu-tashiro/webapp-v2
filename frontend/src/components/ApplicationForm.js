@@ -89,7 +89,7 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
         value={year}
         onChange={handleYearChange}
         onKeyDown={handleYearKeyDown}
-        placeholder="2024"
+        placeholder="2026"
         disabled={disabled}
         style={{
           width: '60px',
