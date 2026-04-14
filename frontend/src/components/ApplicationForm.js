@@ -1104,15 +1104,17 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 <div key={index} className="resident-item">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
                     <h3 className="resident-title" style={{ margin: 0 }}>入居者・同居人 {index + 1}</h3>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#fff3e0', padding: '8px 12px', borderRadius: '4px', border: '1px solid #ff9800' }}>
-                      <input
-                        type="checkbox"
-                        checked={resident.sameAsApplicant || false}
-                        onChange={(e) => toggleSameAsApplicant(index, e.target.checked)}
-                        style={{ cursor: 'pointer', width: '18px', height: '18px' }}
-                      />
-                      <span style={{ fontWeight: '500' }}>契約者と同じ（法人の場合は実際入居される入居者を登録してください。）</span>
-                    </label>
+                    {index === 0 && (
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer', backgroundColor: '#fff3e0', padding: '8px 12px', borderRadius: '4px', border: '1px solid #ff9800' }}>
+                        <input
+                          type="checkbox"
+                          checked={resident.sameAsApplicant || false}
+                          onChange={(e) => toggleSameAsApplicant(index, e.target.checked)}
+                          style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+                        />
+                        <span style={{ fontWeight: '500' }}>契約者と同じ（法人の場合は実際入居される入居者を登録してください。）</span>
+                      </label>
+                    )}
                   </div>
                   
                   <div className="form-row">
