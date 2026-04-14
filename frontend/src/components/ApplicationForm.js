@@ -1183,12 +1183,9 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 <label className="form-label">
                   開始日 <span className="required">*</span>
                 </label>
-                <input
-                  type="date"
-                  name="servicePeriodStartDate"
+                <CustomDateInput
                   value={formData.servicePeriodStartDate}
-                  onChange={handleInputChange}
-                  className="form-input"
+                  onChange={(dateStr) => setFormData({ ...formData, servicePeriodStartDate: dateStr })}
                 />
               </div>
 
