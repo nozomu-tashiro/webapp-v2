@@ -52,12 +52,15 @@ export const convertToCSV = (applications, agentCode, agentName) => {
     // 入居者・同居人情報
     '入居者1_お名前',
     '入居者1_フリガナ',
+    '入居者1_生年月日',
     '入居者1_続柄',
     '入居者2_お名前',
     '入居者2_フリガナ',
+    '入居者2_生年月日',
     '入居者2_続柄',
     '入居者3_お名前',
     '入居者3_フリガナ',
+    '入居者3_生年月日',
     '入居者3_続柄',
     
     // 緊急連絡先
@@ -141,12 +144,15 @@ export const convertToCSV = (applications, agentCode, agentName) => {
       // 入居者・同居人情報（最大3人）
       residents[0]?.name || '',
       residents[0]?.nameKana || '',
+      residents[0]?.birthDate || '',
       residents[0]?.relationship || '',
       residents[1]?.name || '',
       residents[1]?.nameKana || '',
+      residents[1]?.birthDate || '',
       residents[1]?.relationship || '',
       residents[2]?.name || '',
       residents[2]?.nameKana || '',
+      residents[2]?.birthDate || '',
       residents[2]?.relationship || '',
       
       // 緊急連絡先

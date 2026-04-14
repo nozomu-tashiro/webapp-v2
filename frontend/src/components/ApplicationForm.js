@@ -58,10 +58,10 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
   
   // Accordion state for optional sections
   const [accordionState, setAccordionState] = useState({
-    basicInfo: false,
-    servicePeriod: false,
-    residents: false,
-    property: false,
+    basicInfo: true,      // デフォルトで開く
+    servicePeriod: true,  // デフォルトで開く
+    residents: true,      // デフォルトで開く
+    property: true,       // デフォルトで開く
     emergencyContact: false
   });
   
@@ -135,7 +135,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
   const addResident = () => {
     setFormData(prev => ({
       ...prev,
-      residents: [...prev.residents, { name: '', nameKana: '', relationship: '' }]
+      residents: [...prev.residents, { name: '', nameKana: '', relationship: '', birthDate: '', sameAsApplicant: false }]
     }));
   };
 
@@ -157,13 +157,147 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     }));
   };
 
+  // 契約者と同じ情報をコピー
+  const toggleSameAsApplicant = (index, checked) => {
+    setFormData(prev => {
+      const updatedResidents = prev.residents.map((resident, i) => {
+        if (i === index) {
+          if (checked) {
+            // 契約者情報をコピー
+            return {
+              ...resident,
+              sameAsApplicant: true,
+              name: prev.applicantName,
+              nameKana: prev.applicantNameKana,
+              birthDate: prev.birthDate
+            };
+          } else {
+            // クリア
+            return {
+              ...resident,
+              sameAsApplicant: false,
+              name: '',
+              nameKana: '',
+              birthDate: ''
+            };
+          }
+        }
+        return resident;
+      });
+      return { ...prev, residents: updatedResidents };
+    });
+  };
+
   // Validate form
   const validateForm = () => {
     console.log('=== Form Validation Start ===');
     console.log('selectedProduct:', formData.selectedProduct);
     console.log('paymentMethod:', formData.paymentMethod);
     
-    // 最小限の必須項目のみチェック
+    // 対象物件情報の必須項目チェック
+    if (!formData.propertyAddress) {
+      const errorMsg = '住所を入力してください';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    if (!formData.propertyName) {
+      const errorMsg = '物件名を入力してください';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    if (!formData.propertyNameKana) {
+      const errorMsg = '物件名（フリガナ）を入力してください';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    if (!formData.roomNumber) {
+      const errorMsg = '号室を入力してください（戸建等でない場合は「なし」と記載）';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    
+    // 申込基本情報の必須項目チェック
+    if (!formData.applicantName) {
+      const errorMsg = 'お申込者名を入力してください';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    if (!formData.applicantNameKana) {
+      const errorMsg = 'フリガナを入力してください';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    if (!formData.mobilePhone) {
+      const errorMsg = '携帯番号を入力してください';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    if (!formData.birthDate) {
+      const errorMsg = '生年月日を入力してください';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    
+    // サービス期間の必須項目チェック
+    if (!formData.servicePeriodStartDate) {
+      const errorMsg = 'サービス開始日を入力してください';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    
+    // 入居者・同居人情報の必須項目チェック
+    if (formData.residents.length === 0) {
+      const errorMsg = '入居者・同居人情報を少なくとも1人入力してください';
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error('Validation failed:', errorMsg);
+      return false;
+    }
+    
+    for (let i = 0; i < formData.residents.length; i++) {
+      const resident = formData.residents[i];
+      if (!resident.name) {
+        const errorMsg = `入居者・同居人 ${i + 1} のお名前を入力してください`;
+        setError(errorMsg);
+        alert(errorMsg);
+        console.error('Validation failed:', errorMsg);
+        return false;
+      }
+      if (!resident.nameKana) {
+        const errorMsg = `入居者・同居人 ${i + 1} のフリガナを入力してください`;
+        setError(errorMsg);
+        alert(errorMsg);
+        console.error('Validation failed:', errorMsg);
+        return false;
+      }
+      if (!resident.birthDate) {
+        const errorMsg = `入居者・同居人 ${i + 1} の生年月日を入力してください`;
+        setError(errorMsg);
+        alert(errorMsg);
+        console.error('Validation failed:', errorMsg);
+        return false;
+      }
+    }
+    
+    // 商品・支払方法の必須項目チェック
     if (!formData.selectedProduct) {
       const errorMsg = '商品を選択してください';
       setError(errorMsg);
@@ -194,9 +328,6 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
         return false;
       }
     }
-    
-    // Emergency contact validation removed per user request
-    // No longer required even when senior-watch option is selected
     
     console.log('=== Validation Passed ===');
     setError('');
@@ -718,7 +849,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             <div className="accordion-content">
               <div className="form-row">
                 <label className="form-label">
-                  住所
+                  住所 <span className="required">*</span>
                 </label>
                 <input
                   type="text"
@@ -732,7 +863,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  物件名
+                  物件名 <span className="required">*</span>
                 </label>
                 <input
                   type="text"
@@ -746,7 +877,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  物件名フリガナ
+                  物件名フリガナ <span className="required">*</span>
                 </label>
                 <input
                   type="text"
@@ -760,7 +891,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  号室
+                  号室（戸建等でない場合は「なし」と記載） <span className="required">*</span>
                 </label>
                 <input
                   type="text"
@@ -794,7 +925,9 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             <div className="accordion-content">
               <div className="form-row">
                 <label className="form-label">
-                  お申込者様名
+                  お申込者名（法人の場合は法人名） <span className="required">*</span>
+                  <br />
+                  <small style={{ fontSize: '12px', color: '#666' }}>※入居者情報は必須入力となります。</small>
                 </label>
                 <input
                   type="text"
@@ -808,7 +941,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  フリガナ
+                  フリガナ <span className="required">*</span>
                 </label>
                 <input
                   type="text"
@@ -822,7 +955,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  携帯番号
+                  携帯番号 <span className="required">*</span>
                 </label>
                 <input
                   type="tel"
@@ -850,7 +983,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  生年月日
+                  生年月日 <span className="required">*</span>
                 </label>
                 <input
                   type="date"
@@ -911,7 +1044,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             <div className="accordion-content">
               <div className="form-row">
                 <label className="form-label">
-                  開始日
+                  開始日 <span className="required">*</span>
                 </label>
                 <input
                   type="date"
@@ -969,27 +1102,54 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               
               {formData.residents.map((resident, index) => (
                 <div key={index} className="resident-item">
-                  <h3 className="resident-title">入居者・同居人 {index + 1}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                    <h3 className="resident-title" style={{ margin: 0 }}>入居者・同居人 {index + 1}</h3>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={resident.sameAsApplicant || false}
+                        onChange={(e) => toggleSameAsApplicant(index, e.target.checked)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <span>契約者と同じ（法人の場合は実際入居される入居者を登録してください。）</span>
+                    </label>
+                  </div>
                   
                   <div className="form-row">
-                    <label className="form-label">お名前</label>
+                    <label className="form-label">お名前 <span className="required">*</span></label>
                     <input
                       type="text"
                       value={resident.name}
                       onChange={(e) => updateResident(index, 'name', e.target.value)}
                       className="form-input"
                       placeholder="山田 花子"
+                      disabled={resident.sameAsApplicant}
+                      style={{ backgroundColor: resident.sameAsApplicant ? '#f5f5f5' : 'white' }}
                     />
                   </div>
 
                   <div className="form-row">
-                    <label className="form-label">フリガナ</label>
+                    <label className="form-label">フリガナ <span className="required">*</span></label>
                     <input
                       type="text"
                       value={resident.nameKana}
                       onChange={(e) => updateResident(index, 'nameKana', e.target.value)}
                       className="form-input"
                       placeholder="ヤマダ ハナコ"
+                      disabled={resident.sameAsApplicant}
+                      style={{ backgroundColor: resident.sameAsApplicant ? '#f5f5f5' : 'white' }}
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label className="form-label">生年月日 <span className="required">*</span></label>
+                    <input
+                      type="date"
+                      value={resident.birthDate || ''}
+                      onChange={(e) => updateResident(index, 'birthDate', e.target.value)}
+                      className="form-input"
+                      disabled={resident.sameAsApplicant}
+                      style={{ backgroundColor: resident.sameAsApplicant ? '#f5f5f5' : 'white' }}
                     />
                   </div>
 
