@@ -239,20 +239,21 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       console.error('Validation failed:', errorMsg);
       return false;
     }
-    if (!formData.mobilePhone) {
-      const errorMsg = '携帯番号を入力してください';
-      setError(errorMsg);
-      alert(errorMsg);
-      console.error('Validation failed:', errorMsg);
-      return false;
-    }
-    if (!formData.birthDate) {
-      const errorMsg = '生年月日を入力してください';
-      setError(errorMsg);
-      alert(errorMsg);
-      console.error('Validation failed:', errorMsg);
-      return false;
-    }
+    // 携帯番号・生年月日は任意項目に変更（2026-04-14）
+    // if (!formData.mobilePhone) {
+    //   const errorMsg = '携帯番号を入力してください';
+    //   setError(errorMsg);
+    //   alert(errorMsg);
+    //   console.error('Validation failed:', errorMsg);
+    //   return false;
+    // }
+    // if (!formData.birthDate) {
+    //   const errorMsg = '生年月日を入力してください';
+    //   setError(errorMsg);
+    //   alert(errorMsg);
+    //   console.error('Validation failed:', errorMsg);
+    //   return false;
+    // }
     
     // サービス期間の必須項目チェック
     if (!formData.servicePeriodStartDate) {
@@ -288,13 +289,14 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
         console.error('Validation failed:', errorMsg);
         return false;
       }
-      if (!resident.birthDate) {
-        const errorMsg = `入居者・同居人 ${i + 1} の生年月日を入力してください`;
-        setError(errorMsg);
-        alert(errorMsg);
-        console.error('Validation failed:', errorMsg);
-        return false;
-      }
+      // 入居者の生年月日は任意項目に変更（2026-04-14）
+      // if (!resident.birthDate) {
+      //   const errorMsg = `入居者・同居人 ${i + 1} の生年月日を入力してください`;
+      //   setError(errorMsg);
+      //   alert(errorMsg);
+      //   console.error('Validation failed:', errorMsg);
+      //   return false;
+      // }
     }
     
     // 商品・支払方法の必須項目チェック
@@ -955,7 +957,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  携帯番号 <span className="required">*</span>
+                  携帯番号
                 </label>
                 <input
                   type="tel"
@@ -983,7 +985,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  生年月日 <span className="required">*</span>
+                  生年月日
                 </label>
                 <input
                   type="date"
@@ -1144,7 +1146,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                   </div>
 
                   <div className="form-row">
-                    <label className="form-label">生年月日 <span className="required">*</span></label>
+                    <label className="form-label">生年月日</label>
                     <input
                       type="date"
                       value={resident.birthDate || ''}
