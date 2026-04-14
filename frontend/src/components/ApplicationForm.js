@@ -1123,7 +1123,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  生年月日
+                  生年月日（西暦）
                 </label>
                 <CustomDateInput
                   value={formData.birthDate}
@@ -1181,7 +1181,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             <div className="accordion-content">
               <div className="form-row">
                 <label className="form-label">
-                  開始日 <span className="required">*</span>
+                  開始日（西暦） <span className="required">*</span>
                 </label>
                 <CustomDateInput
                   value={formData.servicePeriodStartDate}
@@ -1278,7 +1278,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                   </div>
 
                   <div className="form-row">
-                    <label className="form-label">生年月日</label>
+                    <label className="form-label">生年月日（西暦）</label>
                     <CustomDateInput
                       value={resident.birthDate || ''}
                       onChange={(dateStr) => updateResident(index, 'birthDate', dateStr)}
