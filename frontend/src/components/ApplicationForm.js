@@ -189,6 +189,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [dateWarning, setDateWarning] = useState(''); // 開始日の警告メッセージ
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [savedDataId, setSavedDataId] = useState(null);
   const [progress, setProgress] = useState(0);
@@ -242,6 +243,33 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       ...prev,
       [name]: value
     }));
+  };
+
+  // サービス開始日の変更ハンドラー（半年以上前の日付に対して警告）
+  const handleServiceStartDateChange = (dateStr) => {
+    setFormData(prev => ({
+      ...prev,
+      servicePeriodStartDate: dateStr
+    }));
+    
+    if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const selectedDate = new Date(dateStr);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // 6ヶ月前の日付を計算
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      sixMonthsAgo.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < sixMonthsAgo) {
+        setDateWarning('⚠️ 開始日が半年以上前になっていますが、間違いありませんか？');
+      } else {
+        setDateWarning('');
+      }
+    } else {
+      setDateWarning('');
+    }
   };
 
   // Handle nested object changes
@@ -1185,8 +1213,13 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 </label>
                 <CustomDateInput
                   value={formData.servicePeriodStartDate}
-                  onChange={(dateStr) => setFormData({ ...formData, servicePeriodStartDate: dateStr })}
+                  onChange={handleServiceStartDateChange}
                 />
+                {dateWarning && (
+                  <div className="warning-message">
+                    {dateWarning}
+                  </div>
+                )}
               </div>
 
               <div className="form-row">
