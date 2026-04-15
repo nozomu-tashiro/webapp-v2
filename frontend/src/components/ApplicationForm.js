@@ -738,7 +738,10 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
           // { value: 'yearly-1', label: '年払（1年更新）', warning: true } // 非表示（ロジックは保持）
         ];
       case 'anshin-full-support':
-        return [{ value: 'monthly', label: '月払' }];
+        return [
+          { value: 'monthly', label: '月払' },
+          { value: 'yearly-2', label: '年払（2年更新）' }
+        ];
       case 'ierabu-anshin-support':
         return [{ value: 'yearly-2', label: '年払（2年更新）' }];
       default:
