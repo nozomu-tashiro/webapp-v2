@@ -322,6 +322,36 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     }));
   };
 
+  // Bug③ 修正: 登録時の代理店情報を自動入力
+  useEffect(() => {
+    // 新規入力モードの場合のみ、登録時の代理店情報を自動入力
+    if (!editMode) {
+      const currentUser = getCurrentUser();
+      if (currentUser.isLoggedIn && currentUser.agentCode && currentUser.agentName) {
+        // 代理店コードを分割（XX-XX-XXXXXXXXXX-XXX 形式）
+        const parts = currentUser.agentCode.split('-');
+        const codePart1 = parts[0] || '';
+        const codePart2 = parts[1] || '';
+        const codePart3 = parts[2] || '';
+        const codePart4 = parts[3] || ''; // 端末番号（あれば）
+        
+        setFormData(prev => ({
+          ...prev,
+          agentInfo: {
+            ...prev.agentInfo,
+            name: currentUser.agentName,
+            codePart1,
+            codePart2,
+            codePart3,
+            codePart4,
+            code: `${codePart1}-${codePart2}-${codePart3}${codePart4 ? '-' + codePart4 : ''}`
+          }
+        }));
+        console.log('Bug③: 代理店情報を自動入力:', currentUser);
+      }
+    }
+  }, [editMode]);
+
   // 編集モード用：editDataが渡された場合、フォームに読み込む
   useEffect(() => {
     if (editMode && editData) {
