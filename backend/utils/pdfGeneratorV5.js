@@ -462,22 +462,23 @@ class PDFGeneratorV5 {
         });
       }
       
-      // 携帯番号（値がない場合や「未入力」の場合は印字しない）
-      if (mobilePhone && mobilePhone.trim() !== '' && mobilePhone !== '未入力') {
-        page.drawText(mobilePhone, {
+      // 固定番号（値がない場合や「未入力」の場合は印字しない）
+      // PDFの帳票では固定電話が上、携帯電話が下の順序
+      if (homePhone && homePhone.trim() !== '' && homePhone !== '未入力') {
+        page.drawText(homePhone, {
           x: 430,
-          y: 685,
+          y: 685,  // 上の欄
           size: fontSize.large, // 12pt
           font: font,
           color: rgb(0, 0, 0)
         });
       }
       
-      // 固定番号（値がない場合や「未入力」の場合は印字しない）
-      if (homePhone && homePhone.trim() !== '' && homePhone !== '未入力') {
-        page.drawText(homePhone, {
+      // 携帯番号（値がない場合や「未入力」の場合は印字しない）
+      if (mobilePhone && mobilePhone.trim() !== '' && mobilePhone !== '未入力') {
+        page.drawText(mobilePhone, {
           x: 430,
-          y: 665,
+          y: 665,  // 下の欄
           size: fontSize.large, // 12pt
           font: font,
           color: rgb(0, 0, 0)
