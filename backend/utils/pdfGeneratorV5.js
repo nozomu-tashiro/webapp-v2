@@ -384,13 +384,13 @@ class PDFGeneratorV5 {
         roomNumber: { x: 465, y: 570 }
       };
       
-      // 商品④いえらぶ安心サポートの座標 (2025-12-15更新)
+      // 商品④いえらぶ安心サポートの座標 (元の座標-5px調整)
       const coords4 = {
-        postalCode: { x: 180, y: 520 },  // 〒マークの右側、住所の15px上
-        address: { x: 153, y: 505 },
-        propertyName: { x: 153, y: 470 },
-        propertyKana: { x: 153, y: 485 },
-        roomNumber: { x: 465, y: 470 }
+        postalCode: { x: 180, y: 540 },  // 〒マークの右側、住所の15px上
+        address: { x: 153, y: 525 },     // 元:530 → 530-5=525
+        propertyName: { x: 153, y: 490 },  // 元:495 → 495-5=490
+        propertyKana: { x: 153, y: 505 },  // 元:510 → 510-5=505
+        roomNumber: { x: 465, y: 490 }     // 元:495 → 495-5=490
       };
       
       // 使用する座標を選択
