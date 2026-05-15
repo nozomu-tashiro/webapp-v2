@@ -386,7 +386,7 @@ class PDFGeneratorV5 {
       
       // 商品④いえらぶ安心サポートの座標 (2025-12-15更新)
       const coords4 = {
-        postalCode: { x: 180, y: 545 },  // 〒マークの右側、住所の15px上
+        postalCode: { x: 180, y: 535 },  // 〒マークの右側、住所の5px上（調整済み）
         address: { x: 153, y: 530 },
         propertyName: { x: 153, y: 495 },
         propertyKana: { x: 153, y: 510 },
