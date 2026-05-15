@@ -12,7 +12,7 @@
     "build:frontend": "cd frontend && npm run build",
     "start": "cd backend && node server.js",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
-    "vercel-build": "cd frontend && npm install && npm run build"
+    "vercel-build": "cd frontend && npm install && npm run build && cd .. && mv frontend/build build"
   },
   "keywords": ["application", "pdf", "form"],
   "author": "",
