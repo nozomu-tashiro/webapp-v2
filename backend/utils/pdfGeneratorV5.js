@@ -212,9 +212,26 @@ class PDFGeneratorV5 {
         
         // === 保証番号入力済チェックマーク ===
         // 保証番号が入力されている場合、「□いえらぶ安心保証（家賃保証）契約者」のチェックボックスに✓を印字
-        // チェックマーク位置: 保証番号から左に1.5cm(42.5pt)、上に0.5cm(14pt)
-        const checkX = guaranteeX - 42.5;
-        const checkY = guaranteeY + 14;
+        // チェックマーク位置: 保証番号座標から商品・支払方法別にオフセット調整
+        // 基本: 左に1.5cm(42.5pt)、上に0.5cm(14pt)
+        // + 追加調整:
+        //   - 月払①②③: 左に1.3cm(36.86pt)、上に0.1cm(2.84pt)
+        //   - 年払①②③: 左に0.6cm(17.01pt)
+        //   - いえらぶ安心サポート④: 左に0.4cm(11.34pt)
+        let checkX, checkY;
+        if (isIerabuProduct) {
+          // いえらぶ安心サポート④: 基本 + 左に0.4cm
+          checkX = guaranteeX - 42.5 - 11.34;
+          checkY = guaranteeY + 14;
+        } else if (isYearlyPayment) {
+          // 年払①②③: 基本 + 左に0.6cm
+          checkX = guaranteeX - 42.5 - 17.01;
+          checkY = guaranteeY + 14;
+        } else {
+          // 月払①②③: 基本 + 左に1.3cm、上に0.1cm
+          checkX = guaranteeX - 42.5 - 36.86;
+          checkY = guaranteeY + 14 + 2.84;
+        }
         
         page.drawText('✓', {
           x: checkX,
