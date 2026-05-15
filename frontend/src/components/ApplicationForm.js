@@ -288,12 +288,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
   // ひらがな・全角カタカナを半角カナに変換する関数
   const convertToHalfKana = (str) => {
-    // ひらがなをカタカナに変換
-    const hiraToKata = str.replace(/[\u3041-\u3096]/g, (match) => {
-      return String.fromCharCode(match.charCodeAt(0) + 0x60);
-    });
-    
-    // 全角カタカナを半角カナに変換
+    // 全角カタカナを半角カナに変換するマップ
     const kanaMap = {
       'ガ': 'ｶﾞ', 'ギ': 'ｷﾞ', 'グ': 'ｸﾞ', 'ゲ': 'ｹﾞ', 'ゴ': 'ｺﾞ',
       'ザ': 'ｻﾞ', 'ジ': 'ｼﾞ', 'ズ': 'ｽﾞ', 'ゼ': 'ｾﾞ', 'ゾ': 'ｿﾞ',
@@ -316,7 +311,30 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       'ー': 'ｰ', '・': '･', '　': ' '
     };
     
-    return hiraToKata.split('').map(char => kanaMap[char] || char).join('');
+    let result = '';
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      
+      // 半角カナはそのまま（ｱ-ﾝ、濁点ﾞ、半濁点ﾟ）
+      if (char >= 'ｦ' && char <= 'ﾟ') {
+        result += char;
+      }
+      // ひらがなは全角カタカナに変換してから半角カナに
+      else if (char >= 'ぁ' && char <= 'ん') {
+        const kata = String.fromCharCode(char.charCodeAt(0) + 0x60);
+        result += kanaMap[kata] || kata;
+      }
+      // 全角カタカナは半角カナに変換
+      else if (kanaMap[char]) {
+        result += kanaMap[char];
+      }
+      // それ以外（スペースなど）はそのまま
+      else {
+        result += char;
+      }
+    }
+    
+    return result;
   };
 
   // フリガナ入力ハンドラー（ひらがな・全角カタカナ→半角カナ自動変換、不正文字入力拒否）
