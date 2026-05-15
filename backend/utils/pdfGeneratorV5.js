@@ -209,6 +209,20 @@ class PDFGeneratorV5 {
           font: font,
           color: rgb(0, 0, 0)
         });
+        
+        // === 保証番号入力済チェックマーク ===
+        // 保証番号が入力されている場合、「□いえらぶ安心保証（家賃保証）契約者」のチェックボックスに✓を印字
+        // チェックマーク位置: 保証番号から左に1.5cm(42.5pt)、上に0.5cm(14pt)
+        const checkX = guaranteeX - 42.5;
+        const checkY = guaranteeY + 14;
+        
+        page.drawText('✓', {
+          x: checkX,
+          y: checkY,
+          size: fontSize.large, // 12pt
+          font: font,
+          color: rgb(0, 0, 0)
+        });
       }
 
       // === サービス期間開始日 ===
