@@ -477,8 +477,13 @@ class PDFGeneratorV5 {
         });
       }
       
-      // 号室（値がない場合や「未入力」の場合は印字しない）
-      if (roomNumber && roomNumber.trim() !== '' && roomNumber !== '未入力') {
+      // Bug⑤修正: 号室（値がない場合や「未入力」「なし」等の場合は印字しない）
+      const roomNumberTrimmed = roomNumber ? roomNumber.trim() : '';
+      const skipRoomNumberWords = ['未入力', 'なし', '無し', '無'];
+      const shouldPrintRoomNumber = roomNumberTrimmed !== '' && 
+                                     !skipRoomNumberWords.includes(roomNumberTrimmed);
+      
+      if (shouldPrintRoomNumber) {
         page.drawText(roomNumber, {
           x: coords.roomNumber.x,
           y: coords.roomNumber.y,

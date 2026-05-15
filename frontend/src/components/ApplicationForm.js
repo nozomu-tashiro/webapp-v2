@@ -1360,7 +1360,10 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
               <div className="form-row">
                 <label className="form-label">
-                  号室（戸建等でない場合は「なし」と記載） <span className="required">*</span>
+                  号室 <span className="required">*</span>
+                  <small style={{ display: 'block', fontWeight: 'normal', color: '#666', marginTop: '4px' }}>
+                    ※戸建等で号室がない場合は「なし」と入力してください（PDFには印字されません）
+                  </small>
                 </label>
                 <input
                   type="text"
@@ -1368,7 +1371,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                   value={formData.roomNumber}
                   onChange={handleInputChange}
                   className="form-input"
-                  placeholder="101"
+                  placeholder="101（戸建の場合は「なし」）"
                 />
               </div>
             </div>
