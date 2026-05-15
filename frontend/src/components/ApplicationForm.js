@@ -335,25 +335,18 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 .join('');
   };
 
-  // フリガナ入力ハンドラー
+  // フリガナ入力ハンドラー（普通のonChange）
   const handleKanaChange = (e, fieldName) => {
-    // 重要: e.target.valueには既に変換済みの値が混ざっているので使わない
-    // 代わりに、nativeEvent.dataを使う（IMEから直接入力された文字）
-    const inputValue = e.target.value;
-    
-    // 既に半角カナだけなら変換しない（重複を防ぐ）
-    const isAlreadyHalfKana = /^[ｦ-ﾟ\s]*$/.test(inputValue);
-    if (isAlreadyHalfKana) {
-      setFormData(prev => ({
-        ...prev,
-        [fieldName]: inputValue
-      }));
-      return;
-    }
-    
-    // ひらがな・全角カタカナが含まれている場合のみ変換
-    const converted = toHalfKana(inputValue);
-    
+    // そのまま保存（変換しない）
+    setFormData(prev => ({
+      ...prev,
+      [fieldName]: e.target.value
+    }));
+  };
+  
+  // IME確定時に変換（onCompositionEnd）
+  const handleKanaCompositionEnd = (e, fieldName) => {
+    const converted = toHalfKana(e.target.value);
     setFormData(prev => ({
       ...prev,
       [fieldName]: converted
@@ -389,11 +382,20 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
   // Handle nested object changes
   const handleNestedChange = (parent, field, value) => {
-    // フリガナフィールドの場合は変換
+    setFormData(prev => ({
+      ...prev,
+      [parent]: {
+        ...prev[parent],
+        [field]: value
+      }
+    }));
+  };
+  
+  // Handle nested change on composition end (IME確定時)
+  const handleNestedCompositionEnd = (parent, field, value) => {
     if (field === 'nameKana') {
       value = toHalfKana(value);
     }
-    
     setFormData(prev => ({
       ...prev,
       [parent]: {
@@ -435,11 +437,19 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
   // Update resident
   const updateResident = (index, field, value) => {
-    // フリガナフィールドの場合は変換
+    setFormData(prev => ({
+      ...prev,
+      residents: prev.residents.map((resident, i) => 
+        i === index ? { ...resident, [field]: value } : resident
+      )
+    }));
+  };
+  
+  // Update resident on composition end (IME確定時)
+  const updateResidentOnCompositionEnd = (index, field, value) => {
     if (field === 'nameKana') {
       value = toHalfKana(value);
     }
-    
     setFormData(prev => ({
       ...prev,
       residents: prev.residents.map((resident, i) => 
@@ -1195,6 +1205,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                   name="propertyNameKana"
                   value={formData.propertyNameKana}
                   onChange={(e) => handleKanaChange(e, 'propertyNameKana')}
+                  onCompositionEnd={(e) => handleKanaCompositionEnd(e, 'propertyNameKana')}
                   className="form-input"
                   placeholder="ｲｴﾗﾌﾞﾏﾝｼｮﾝ（カタカナで入力）"
                   inputMode="katakana"
@@ -1260,6 +1271,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                   name="applicantNameKana"
                   value={formData.applicantNameKana}
                   onChange={(e) => handleKanaChange(e, 'applicantNameKana')}
+                  onCompositionEnd={(e) => handleKanaCompositionEnd(e, 'applicantNameKana')}
                   className="form-input"
                   placeholder="ﾔﾏﾀﾞ ﾀﾛｳ（カタカナで入力）"
                   inputMode="katakana"
@@ -1448,6 +1460,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                       type="text"
                       value={resident.nameKana}
                       onChange={(e) => updateResident(index, 'nameKana', e.target.value)}
+                      onCompositionEnd={(e) => updateResidentOnCompositionEnd(index, 'nameKana', e.target.value)}
                       className="form-input"
                       placeholder="ﾔﾏﾀﾞ ﾊﾅｺ（カタカナで入力）"
                       disabled={resident.sameAsApplicant}
@@ -1541,6 +1554,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                     type="text"
                     value={formData.emergencyContact.nameKana}
                     onChange={(e) => handleNestedChange('emergencyContact', 'nameKana', e.target.value)}
+                    onCompositionEnd={(e) => handleNestedCompositionEnd('emergencyContact', 'nameKana', e.target.value)}
                     className="form-input"
                     placeholder="ﾀﾅｶ ｲﾁﾛｳ（カタカナで入力）"
                     inputMode="katakana"
