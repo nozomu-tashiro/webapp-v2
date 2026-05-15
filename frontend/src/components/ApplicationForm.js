@@ -252,6 +252,10 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
 };
 
 const ApplicationForm = ({ editMode = false, editData = null, editingId = null, onSaveComplete = null }) => {
+  // Bug⑦: シューリット（家電の安心サポート）表示制御
+  // 過去実績1件のため非表示。復活時は true に変更。
+  const SHOW_SYURIT = false;
+  
   // 認証情報を取得
   const currentUser = getCurrentUser();
   
@@ -1191,14 +1195,18 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 />
                 シニア向け総合見守りサービス（まごころ）
               </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={formData.selectedOptions.includes('appliance-support')}
-                  onChange={() => handleOptionChange('appliance-support')}
-                />
-                家電の安心サポート（Syu-rIt！シューリット！）
-              </label>
+              {/* Bug⑦: シューリット非表示（過去実績1件のため） */}
+              {/* 復活方法: 上部の SHOW_SYURIT を true に変更 */}
+              {SHOW_SYURIT && (
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={formData.selectedOptions.includes('appliance-support')}
+                    onChange={() => handleOptionChange('appliance-support')}
+                  />
+                  家電の安心サポート（Syu-rIt！シューリット！）
+                </label>
+              )}
             </div>
           </div>
 
