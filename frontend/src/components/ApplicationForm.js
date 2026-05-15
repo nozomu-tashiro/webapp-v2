@@ -275,6 +275,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     paymentMethod: 'monthly',
     selectedOptions: [],
     servicePrice: '',
+    companyRenewal: false, // Bug⑥: 運営会社（いえらぶ）更新フラグ
     guaranteeNumber: '',
     servicePeriodStartDate: '',
     emergencyContact: {
@@ -761,6 +762,17 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       return false;
     }
     
+    // Bug⑥: 運営会社更新チェックONの場合、更新時請求額の入力必須
+    if (formData.paymentMethod !== 'monthly' && formData.companyRenewal) {
+      if (!formData.servicePrice || formData.servicePrice.trim() === '') {
+        const errorMsg = '運営会社（いえらぶ）更新を選択した場合、更新時ご請求額を入力してください';
+        setError(errorMsg);
+        alert(errorMsg);
+        console.error('Validation failed:', errorMsg);
+        return false;
+      }
+    }
+    
     // 販売店コード形式チェック（XX-XX-最大10桁-XXX または XX-XX-最大10桁）
     const agentCode = formData.agentInfo.code;
     if (agentCode) {
@@ -814,6 +826,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       paymentMethod: preservedData.paymentMethod, // ✅ 保持
       selectedOptions: preservedData.selectedOptions, // ✅ 保持
       servicePrice: preservedData.servicePrice, // ✅ 保持
+      companyRenewal: preservedData.companyRenewal || false, // Bug⑥: 運営会社更新フラグを保持
       guaranteeNumber: '', // ❌ クリア（毎回変わる）
       servicePeriodStartDate: '',
       emergencyContact: {
@@ -1100,23 +1113,62 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             )}
           </div>
 
-          <div className="form-row">
-            <label className="form-label">
-              {formData.paymentMethod === 'monthly' 
-                ? 'サービス提供価格（円/税込）/毎月'
-                : '【更新時】運営会社（いえらぶ）にて更新案内する場合：更新時ご請求額（円/※税別）'
-              }
-            </label>
-            <input
-              type="text"
-              name="servicePrice"
-              value={formData.servicePrice}
-              onChange={handlePriceChange}
-              onBlur={handlePriceBlur}
-              className="form-input"
-              placeholder={formData.paymentMethod === 'monthly' ? '1,100' : '15,000'}
-            />
-          </div>
+          {/* Bug⑥: 月払の場合は通常の価格入力 */}
+          {formData.paymentMethod === 'monthly' && (
+            <div className="form-row">
+              <label className="form-label">
+                サービス提供価格（円/税込）/毎月
+              </label>
+              <input
+                type="text"
+                name="servicePrice"
+                value={formData.servicePrice}
+                onChange={handlePriceChange}
+                onBlur={handlePriceBlur}
+                className="form-input"
+                placeholder="1,100"
+              />
+            </div>
+          )}
+
+          {/* Bug⑥: 年払の場合は運営会社更新チェックボックスを表示 */}
+          {formData.paymentMethod !== 'monthly' && (
+            <div className="form-row">
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center' }}>
+                <input
+                  type="checkbox"
+                  checked={formData.companyRenewal}
+                  onChange={(e) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      companyRenewal: e.target.checked,
+                      servicePrice: e.target.checked ? prev.servicePrice : '' // チェックOFFで金額クリア
+                    }));
+                  }}
+                  style={{ marginRight: '8px', width: 'auto' }}
+                />
+                運営会社（いえらぶ）にて更新案内する
+              </label>
+            </div>
+          )}
+
+          {/* Bug⑥: 運営会社更新チェックONの場合のみ更新時請求額入力欄を表示 */}
+          {formData.paymentMethod !== 'monthly' && formData.companyRenewal && (
+            <div className="form-row">
+              <label className="form-label">
+                更新時ご請求額（円/※税別） <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                name="servicePrice"
+                value={formData.servicePrice}
+                onChange={handlePriceChange}
+                onBlur={handlePriceBlur}
+                className="form-input"
+                placeholder="15,000"
+              />
+            </div>
+          )}
 
           <div className="form-row">
             <label className="form-label">
