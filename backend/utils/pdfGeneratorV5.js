@@ -324,8 +324,9 @@ class PDFGeneratorV5 {
       // （値がない場合や「未入力」の場合は印字しない）
       const isIerabuProduct = selectedProduct === 'ierabu-anshin-support';
       if (servicePrice && servicePrice.trim() !== '' && servicePrice !== '未入力' && paymentMethod === 'monthly' && !isIerabuProduct) {
-        // 3桁区切りカンマを付けて印字
-        const formattedPrice = Number(servicePrice).toLocaleString('ja-JP');
+        // カンマを除去してから数値に変換し、3桁区切りカンマを付けて印字
+        const cleanPrice = servicePrice.replace(/[^\d]/g, '');
+        const formattedPrice = Number(cleanPrice).toLocaleString('ja-JP');
         page.drawText(formattedPrice, {
           x: 160,
           y: 465,
@@ -342,8 +343,9 @@ class PDFGeneratorV5 {
       // （値がない場合や「未入力」の場合は印字しない）
       const isYearly = paymentMethod && paymentMethod.startsWith('yearly');
       if (servicePrice && servicePrice.trim() !== '' && servicePrice !== '未入力' && isYearly && !isIerabuProduct) {
-        // 3桁区切りカンマを付けて印字
-        const formattedPrice = Number(servicePrice).toLocaleString('ja-JP');
+        // カンマを除去してから数値に変換し、3桁区切りカンマを付けて印字
+        const cleanPrice = servicePrice.replace(/[^\d]/g, '');
+        const formattedPrice = Number(cleanPrice).toLocaleString('ja-JP');
         page.drawText(formattedPrice, {
           x: 430,
           y: 83,
