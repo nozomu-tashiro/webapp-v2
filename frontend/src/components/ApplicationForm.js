@@ -177,6 +177,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     birthDate: '',
     gender: '',
     residents: [{ name: '', nameKana: '', relationship: '', birthDate: '', sameAsApplicant: false }], // デフォルトで1人追加
+    postalCode: '',
     propertyAddress: '',
     propertyName: '',
     propertyNameKana: '',
@@ -262,6 +263,26 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  // 郵便番号入力ハンドラー（自動ハイフン挿入）
+  const handlePostalCodeChange = (e) => {
+    let value = e.target.value.replace(/[^\d]/g, ''); // 数字のみ抽出
+    
+    // 7桁を超えないように制限
+    if (value.length > 7) {
+      value = value.slice(0, 7);
+    }
+    
+    // 3桁目の後にハイフンを挿入
+    if (value.length > 3) {
+      value = value.slice(0, 3) + '-' + value.slice(3);
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      postalCode: value
     }));
   };
 
@@ -1038,6 +1059,21 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
           
           {accordionState.property && (
             <div className="accordion-content">
+              <div className="form-row">
+                <label className="form-label">
+                  郵便番号
+                </label>
+                <input
+                  type="text"
+                  name="postalCode"
+                  value={formData.postalCode}
+                  onChange={handlePostalCodeChange}
+                  className="form-input"
+                  placeholder="123-4567"
+                  maxLength="8"
+                />
+              </div>
+
               <div className="form-row">
                 <label className="form-label">
                   住所 <span className="required">*</span>

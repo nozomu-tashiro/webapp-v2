@@ -90,6 +90,7 @@ class PDFGeneratorV5 {
       birthDate = '',
       gender = '',
       residents = [],
+      postalCode = '',
       propertyAddress = '',
       propertyName = '',
       propertyNameKana = '',
@@ -376,6 +377,7 @@ class PDFGeneratorV5 {
       
       // 商品①②③の座標
       const coords123 = {
+        postalCode: { x: 180, y: 620 },  // 〒マークの右側、住所の15px上
         address: { x: 153, y: 605 },
         propertyName: { x: 153, y: 570 },
         propertyKana: { x: 153, y: 585 },
@@ -384,6 +386,7 @@ class PDFGeneratorV5 {
       
       // 商品④いえらぶ安心サポートの座標 (2025-12-15更新)
       const coords4 = {
+        postalCode: { x: 180, y: 545 },  // 〒マークの右側、住所の15px上
         address: { x: 153, y: 530 },
         propertyName: { x: 153, y: 495 },
         propertyKana: { x: 153, y: 510 },
@@ -392,6 +395,17 @@ class PDFGeneratorV5 {
       
       // 使用する座標を選択
       const coords = isIerabuForProperty ? coords4 : coords123;
+      
+      // 郵便番号（値がある場合のみ印字、数字のみ。〒マークはPDF上に既に印刷済み）
+      if (postalCode && postalCode.trim() !== '' && postalCode !== '未入力') {
+        page.drawText(postalCode, {
+          x: coords.postalCode.x,
+          y: coords.postalCode.y,
+          size: fontSize.large, // 12pt
+          font: font,
+          color: rgb(0, 0, 0)
+        });
+      }
       
       // 住所（値がない場合や「未入力」の場合は印字しない）
       if (propertyAddress && propertyAddress.trim() !== '' && propertyAddress !== '未入力') {
