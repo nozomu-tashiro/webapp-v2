@@ -386,11 +386,11 @@ class PDFGeneratorV5 {
       
       // 商品④いえらぶ安心サポートの座標 (2025-12-15更新)
       const coords4 = {
-        postalCode: { x: 180, y: 475 },  // 〒マークの右側、住所の15px上
-        address: { x: 153, y: 460 },
-        propertyName: { x: 153, y: 425 },
-        propertyKana: { x: 153, y: 440 },
-        roomNumber: { x: 465, y: 425 }
+        postalCode: { x: 180, y: 520 },  // 〒マークの右側、住所の15px上
+        address: { x: 153, y: 505 },
+        propertyName: { x: 153, y: 470 },
+        propertyKana: { x: 153, y: 485 },
+        roomNumber: { x: 465, y: 470 }
       };
       
       // 使用する座標を選択
