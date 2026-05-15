@@ -384,9 +384,9 @@ class PDFGeneratorV5 {
         roomNumber: { x: 465, y: 570 }
       };
       
-      // 商品④いえらぶ安心サポートの座標 (元の座標-7.5px調整)
+      // 商品④いえらぶ安心サポートの座標 (元の座標-7.5px調整、郵便番号のみ-8.5px)
       const coords4 = {
-        postalCode: { x: 180, y: 537.5 },  // 〒マークの右側、住所の15px上
+        postalCode: { x: 180, y: 536.5 },  // 〒マークの右側、住所の15px上、-1px追加調整
         address: { x: 153, y: 522.5 },     // 元:530 → 530-7.5=522.5
         propertyName: { x: 153, y: 487.5 },  // 元:495 → 495-7.5=487.5
         propertyKana: { x: 153, y: 502.5 },  // 元:510 → 510-7.5=502.5
@@ -401,7 +401,7 @@ class PDFGeneratorV5 {
         page.drawText(postalCode, {
           x: coords.postalCode.x,
           y: coords.postalCode.y,
-          size: fontSize.large, // 12pt
+          size: fontSize.medium, // 10pt (郵便番号は1ノッチ小さく)
           font: font,
           color: rgb(0, 0, 0)
         });
