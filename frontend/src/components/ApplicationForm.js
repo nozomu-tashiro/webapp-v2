@@ -286,6 +286,61 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     }));
   };
 
+  // ひらがな・全角カタカナを半角カナに変換する関数
+  const convertToHalfKana = (str) => {
+    // ひらがなをカタカナに変換
+    const hiraToKata = str.replace(/[\u3041-\u3096]/g, (match) => {
+      return String.fromCharCode(match.charCodeAt(0) + 0x60);
+    });
+    
+    // 全角カタカナを半角カナに変換
+    const kanaMap = {
+      'ガ': 'ｶﾞ', 'ギ': 'ｷﾞ', 'グ': 'ｸﾞ', 'ゲ': 'ｹﾞ', 'ゴ': 'ｺﾞ',
+      'ザ': 'ｻﾞ', 'ジ': 'ｼﾞ', 'ズ': 'ｽﾞ', 'ゼ': 'ｾﾞ', 'ゾ': 'ｿﾞ',
+      'ダ': 'ﾀﾞ', 'ヂ': 'ﾁﾞ', 'ヅ': 'ﾂﾞ', 'デ': 'ﾃﾞ', 'ド': 'ﾄﾞ',
+      'バ': 'ﾊﾞ', 'ビ': 'ﾋﾞ', 'ブ': 'ﾌﾞ', 'ベ': 'ﾍﾞ', 'ボ': 'ﾎﾞ',
+      'パ': 'ﾊﾟ', 'ピ': 'ﾋﾟ', 'プ': 'ﾌﾟ', 'ペ': 'ﾍﾟ', 'ポ': 'ﾎﾟ',
+      'ヴ': 'ｳﾞ', 'ヷ': 'ﾜﾞ', 'ヺ': 'ｦﾞ',
+      'ア': 'ｱ', 'イ': 'ｲ', 'ウ': 'ｳ', 'エ': 'ｴ', 'オ': 'ｵ',
+      'カ': 'ｶ', 'キ': 'ｷ', 'ク': 'ｸ', 'ケ': 'ｹ', 'コ': 'ｺ',
+      'サ': 'ｻ', 'シ': 'ｼ', 'ス': 'ｽ', 'セ': 'ｾ', 'ソ': 'ｿ',
+      'タ': 'ﾀ', 'チ': 'ﾁ', 'ツ': 'ﾂ', 'テ': 'ﾃ', 'ト': 'ﾄ',
+      'ナ': 'ﾅ', 'ニ': 'ﾆ', 'ヌ': 'ﾇ', 'ネ': 'ﾈ', 'ノ': 'ﾉ',
+      'ハ': 'ﾊ', 'ヒ': 'ﾋ', 'フ': 'ﾌ', 'ヘ': 'ﾍ', 'ホ': 'ﾎ',
+      'マ': 'ﾏ', 'ミ': 'ﾐ', 'ム': 'ﾑ', 'メ': 'ﾒ', 'モ': 'ﾓ',
+      'ヤ': 'ﾔ', 'ユ': 'ﾕ', 'ヨ': 'ﾖ',
+      'ラ': 'ﾗ', 'リ': 'ﾘ', 'ル': 'ﾙ', 'レ': 'ﾚ', 'ロ': 'ﾛ',
+      'ワ': 'ﾜ', 'ヲ': 'ｦ', 'ン': 'ﾝ',
+      'ァ': 'ｧ', 'ィ': 'ｨ', 'ゥ': 'ｩ', 'ェ': 'ｪ', 'ォ': 'ｫ',
+      'ッ': 'ｯ', 'ャ': 'ｬ', 'ュ': 'ｭ', 'ョ': 'ｮ',
+      'ー': 'ｰ', '・': '･', '　': ' '
+    };
+    
+    return hiraToKata.split('').map(char => kanaMap[char] || char).join('');
+  };
+
+  // フリガナ入力ハンドラー（ひらがな・全角カタカナ→半角カナ自動変換、不正文字入力拒否）
+  const handleKanaChange = (e, fieldName) => {
+    let value = e.target.value;
+    
+    // 許可する文字: ひらがな、全角カタカナ、半角カナ、スペース、長音、中黒
+    const allowedPattern = /^[ぁ-んァ-ヴｱ-ﾝﾞﾟー・\s]*$/;
+    
+    // 不正な文字が含まれている場合は入力を拒否
+    if (!allowedPattern.test(value)) {
+      // 不正な文字を除去
+      value = value.replace(/[^ぁ-んァ-ヴｱ-ﾝﾞﾟー・\s]/g, '');
+    }
+    
+    // ひらがな・全角カタカナを半角カナに変換
+    const convertedValue = convertToHalfKana(value);
+    
+    setFormData(prev => ({
+      ...prev,
+      [fieldName]: convertedValue
+    }));
+  };
+
   // サービス開始日の変更ハンドラー（半年以上前の日付に対して警告）
   const handleServiceStartDateChange = (dateStr) => {
     setFormData(prev => ({
@@ -315,6 +370,20 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
   // Handle nested object changes
   const handleNestedChange = (parent, field, value) => {
+    // フリガナフィールドの場合は変換処理を適用
+    if (field === 'nameKana') {
+      // 許可する文字: ひらがな、全角カタカナ、半角カナ、スペース、長音、中黒
+      const allowedPattern = /^[ぁ-んァ-ヴｱ-ﾝﾞﾟー・\s]*$/;
+      
+      // 不正な文字が含まれている場合は除去
+      if (!allowedPattern.test(value)) {
+        value = value.replace(/[^ぁ-んァ-ヴｱ-ﾝﾞﾟー・\s]/g, '');
+      }
+      
+      // ひらがな・全角カタカナを半角カナに変換
+      value = convertToHalfKana(value);
+    }
+    
     setFormData(prev => ({
       ...prev,
       [parent]: {
@@ -356,6 +425,20 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
   // Update resident
   const updateResident = (index, field, value) => {
+    // フリガナフィールドの場合は変換処理を適用
+    if (field === 'nameKana') {
+      // 許可する文字: ひらがな、全角カタカナ、半角カナ、スペース、長音、中黒
+      const allowedPattern = /^[ぁ-んァ-ヴｱ-ﾝﾞﾟー・\s]*$/;
+      
+      // 不正な文字が含まれている場合は除去
+      if (!allowedPattern.test(value)) {
+        value = value.replace(/[^ぁ-んァ-ヴｱ-ﾝﾞﾟー・\s]/g, '');
+      }
+      
+      // ひらがな・全角カタカナを半角カナに変換
+      value = convertToHalfKana(value);
+    }
+    
     setFormData(prev => ({
       ...prev,
       residents: prev.residents.map((resident, i) => 
@@ -1110,9 +1193,10 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                   type="text"
                   name="propertyNameKana"
                   value={formData.propertyNameKana}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleKanaChange(e, 'propertyNameKana')}
                   className="form-input"
-                  placeholder="イエラブマンション"
+                  placeholder="ｲｴﾗﾌﾞﾏﾝｼｮﾝ（カタカナで入力）"
+                  inputMode="katakana"
                 />
               </div>
 
@@ -1174,9 +1258,10 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                   type="text"
                   name="applicantNameKana"
                   value={formData.applicantNameKana}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleKanaChange(e, 'applicantNameKana')}
                   className="form-input"
-                  placeholder="ヤマダ タロウ"
+                  placeholder="ﾔﾏﾀﾞ ﾀﾛｳ（カタカナで入力）"
+                  inputMode="katakana"
                 />
               </div>
 
@@ -1363,8 +1448,9 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                       value={resident.nameKana}
                       onChange={(e) => updateResident(index, 'nameKana', e.target.value)}
                       className="form-input"
-                      placeholder="ヤマダ ハナコ"
+                      placeholder="ﾔﾏﾀﾞ ﾊﾅｺ（カタカナで入力）"
                       disabled={resident.sameAsApplicant}
+                      inputMode="katakana"
                       style={{ backgroundColor: resident.sameAsApplicant ? '#f5f5f5' : 'white' }}
                     />
                   </div>
@@ -1455,7 +1541,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                     value={formData.emergencyContact.nameKana}
                     onChange={(e) => handleNestedChange('emergencyContact', 'nameKana', e.target.value)}
                     className="form-input"
-                    placeholder="タナカ イチロウ"
+                    placeholder="ﾀﾅｶ ｲﾁﾛｳ（カタカナで入力）"
+                    inputMode="katakana"
                   />
                 </div>
 
