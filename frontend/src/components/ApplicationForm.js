@@ -48,7 +48,17 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
   };
 
   const handleMonthChange = (e) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    let val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    
+    // 月のバリデーション: 0は入力不可、13以上は12に制限
+    if (val === '0' || val === '00') {
+      return; // 0は入力を拒否
+    }
+    const numVal = parseInt(val, 10);
+    if (!isNaN(numVal) && numVal > 12) {
+      val = '12'; // 12を超える場合は12に制限
+    }
+    
     setMonth(val);
     if (val.length === 2) {
       dayRef.current?.focus();
@@ -57,7 +67,32 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
   };
 
   const handleDayChange = (e) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    let val = e.target.value.replace(/\D/g, '').slice(0, 2);
+    
+    // 日のバリデーション: 0は入力不可、月に応じた最大日数チェック
+    if (val === '0' || val === '00') {
+      return; // 0は入力を拒否
+    }
+    
+    const numVal = parseInt(val, 10);
+    if (!isNaN(numVal)) {
+      // 月が入力されている場合、その月の最大日数をチェック
+      if (month && month !== '') {
+        const monthNum = parseInt(month, 10);
+        const yearNum = year && year.length === 4 ? parseInt(year, 10) : 2024;
+        const maxDay = new Date(yearNum, monthNum, 0).getDate(); // その月の最終日
+        
+        if (numVal > maxDay) {
+          val = maxDay.toString().padStart(2, '0'); // 最大日数に制限
+        }
+      } else {
+        // 月が未入力の場合は31日まで
+        if (numVal > 31) {
+          val = '31';
+        }
+      }
+    }
+    
     setDay(val);
     updateParent(year, month, val);
   };
@@ -81,18 +116,48 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
   };
 
   const handleYearKeyDown = (e) => {
+    // Enterキーを押してもフォーム送信されないようにする
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // 年が入力済みなら月にフォーカス移動
+      if (year.length === 4) {
+        monthRef.current?.focus();
+      }
+      return;
+    }
+    
     if (e.key === 'Backspace' && year.length === 0) {
       // 何もしない（最初の欄なので戻る場所なし）
     }
   };
 
   const handleMonthKeyDown = (e) => {
+    // Enterキーを押してもフォーム送信されないようにする
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // 月が入力済みなら日にフォーカス移動
+      if (month.length > 0) {
+        dayRef.current?.focus();
+      }
+      return;
+    }
+    
     if (e.key === 'Backspace' && month.length === 0) {
       yearRef.current?.focus();
     }
   };
 
   const handleDayKeyDown = (e) => {
+    // Enterキーを押してもフォーム送信されないようにする
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // 日が入力済みならフィールドからフォーカスを外す
+      if (day.length > 0) {
+        dayRef.current?.blur();
+      }
+      return;
+    }
+    
     if (e.key === 'Backspace' && day.length === 0) {
       monthRef.current?.focus();
     }
