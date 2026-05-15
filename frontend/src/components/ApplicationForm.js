@@ -442,18 +442,26 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     }));
   };
 
-  // 金額フィールドの変更ハンドラー（リアルタイムでカンマ表示）
-  // Bug②' 修正: 価格入力時に自動的に3桁カンマ区切りを適用
+  // Bug②' 修正: 価格入力の変更ハンドラー（入力中は数字のみ）
   const handlePriceChange = (e) => {
     // 入力値から数字のみ抽出（カンマを除去）
     const rawValue = e.target.value.replace(/[^\d]/g, '');
+    // 入力中は数字のみで保存（カンマなし）
+    setFormData(prev => ({ ...prev, servicePrice: rawValue }));
+  };
+
+  // Bug②' 修正: フォーカスを外した時にカンマ付きフォーマットを適用
+  const handlePriceBlur = () => {
+    if (formData.servicePrice === '') return;
     
+    // 数字のみ抽出（既にカンマがある場合に備えて）
+    const rawValue = formData.servicePrice.replace(/[^\d]/g, '');
     if (rawValue === '') {
       setFormData(prev => ({ ...prev, servicePrice: '' }));
       return;
     }
     
-    // 3桁区切りカンマ付きでフォーマットして保存
+    // 3桁区切りカンマ付きでフォーマット
     const formatted = Number(rawValue).toLocaleString('ja-JP');
     setFormData(prev => ({ ...prev, servicePrice: formatted }));
   };
@@ -1074,6 +1082,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               name="servicePrice"
               value={formData.servicePrice}
               onChange={handlePriceChange}
+              onBlur={handlePriceBlur}
               className="form-input"
               placeholder={formData.paymentMethod === 'monthly' ? '1,100' : '15,000'}
             />
