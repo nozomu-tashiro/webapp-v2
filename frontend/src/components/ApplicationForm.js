@@ -569,13 +569,14 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       const updatedResidents = prev.residents.map((resident, i) => {
         if (i === index) {
           if (checked) {
-            // 契約者情報をコピー
+            // 契約者情報をコピー + Bug④修正: 続柄を「本人」に自動設定
             return {
               ...resident,
               sameAsApplicant: true,
               name: prev.applicantName,
               nameKana: prev.applicantNameKana,
-              birthDate: prev.birthDate
+              birthDate: prev.birthDate,
+              relationship: '本人'
             };
           } else {
             // クリア
@@ -584,7 +585,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               sameAsApplicant: false,
               name: '',
               nameKana: '',
-              birthDate: ''
+              birthDate: '',
+              relationship: ''
             };
           }
         }
