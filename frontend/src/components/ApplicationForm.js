@@ -442,6 +442,24 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     }));
   };
 
+  // 金額フィールドの変更ハンドラー（3桁区切りカンマ対応）
+  const handlePriceChange = (e) => {
+    // 入力値から数字のみ抽出
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    
+    // 数値が空の場合
+    if (rawValue === '') {
+      setFormData(prev => ({ ...prev, servicePrice: '' }));
+      return;
+    }
+    
+    // 数値を3桁区切りカンマ付きで表示用にフォーマット
+    const formattedValue = Number(rawValue).toLocaleString('ja-JP');
+    
+    // 内部的には数値文字列として保持（カンマなし）
+    setFormData(prev => ({ ...prev, servicePrice: rawValue }));
+  };
+
   // サービス開始日の変更ハンドラー（半年以上前の日付に対して警告）
   const handleServiceStartDateChange = (dateStr) => {
     setFormData(prev => ({
@@ -1052,12 +1070,12 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               }
             </label>
             <input
-              type="number"
+              type="text"
               name="servicePrice"
-              value={formData.servicePrice}
-              onChange={handleInputChange}
+              value={formData.servicePrice ? Number(formData.servicePrice).toLocaleString('ja-JP') : ''}
+              onChange={handlePriceChange}
               className="form-input"
-              placeholder={formData.paymentMethod === 'monthly' ? '1100' : '15000'}
+              placeholder={formData.paymentMethod === 'monthly' ? '1,100' : '15,000'}
             />
           </div>
 
