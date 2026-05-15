@@ -442,29 +442,19 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     }));
   };
 
-  // 金額フィールドの変更ハンドラー（数字のみ許可）
+  // 金額フィールドの変更ハンドラー（リアルタイムでカンマ表示）
   const handlePriceChange = (e) => {
     // 入力値から数字のみ抽出（カンマを除去）
     const rawValue = e.target.value.replace(/[^\d]/g, '');
-    setFormData(prev => ({ ...prev, servicePrice: rawValue }));
-  };
-  
-  // 金額フィールドのフォーカスアウト時にカンマ付きフォーマット
-  const handlePriceBlur = () => {
-    if (formData.servicePrice && formData.servicePrice !== '') {
-      // カンマ付きでフォーマット
-      const formatted = Number(formData.servicePrice).toLocaleString('ja-JP');
-      setFormData(prev => ({ ...prev, servicePrice: formatted }));
+    
+    if (rawValue === '') {
+      setFormData(prev => ({ ...prev, servicePrice: '' }));
+      return;
     }
-  };
-  
-  // 金額フィールドのフォーカス時にカンマを除去（編集しやすくする）
-  const handlePriceFocus = () => {
-    if (formData.servicePrice && formData.servicePrice !== '') {
-      // カンマを除去
-      const raw = formData.servicePrice.replace(/[^\d]/g, '');
-      setFormData(prev => ({ ...prev, servicePrice: raw }));
-    }
+    
+    // 3桁区切りカンマ付きでフォーマットして保存
+    const formatted = Number(rawValue).toLocaleString('ja-JP');
+    setFormData(prev => ({ ...prev, servicePrice: formatted }));
   };
 
   // サービス開始日の変更ハンドラー（半年以上前の日付に対して警告）
@@ -1081,8 +1071,6 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               name="servicePrice"
               value={formData.servicePrice}
               onChange={handlePriceChange}
-              onFocus={handlePriceFocus}
-              onBlur={handlePriceBlur}
               className="form-input"
               placeholder={formData.paymentMethod === 'monthly' ? '1,100' : '15,000'}
             />
