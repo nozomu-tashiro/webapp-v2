@@ -479,12 +479,22 @@ class PDFGeneratorV5 {
       
       // Bug⑤修正: 号室（値がない場合や「未入力」「なし」等の場合は印字しない）
       const roomNumberTrimmed = roomNumber ? roomNumber.trim() : '';
-      const skipRoomNumberWords = ['未入力', 'なし', '無し', '無'];
+      
+      // 印字しないキーワードリスト（全角・半角、大文字・小文字を考慮）
+      const skipRoomNumberWords = [
+        '未入力', 
+        'なし', '無し', '無',  // 全角ひらがな・漢字
+        'ナシ', '無シ',        // 全角カタカナ
+        'nashi', 'nasi',       // 半角ローマ字
+        'NASHI', 'NASI'        // 半角ローマ字大文字
+      ];
+      
       const shouldPrintRoomNumber = roomNumberTrimmed !== '' && 
-                                     !skipRoomNumberWords.includes(roomNumberTrimmed);
+                                     !skipRoomNumberWords.includes(roomNumberTrimmed) &&
+                                     !skipRoomNumberWords.includes(roomNumberTrimmed.toLowerCase());
       
       if (shouldPrintRoomNumber) {
-        page.drawText(roomNumber, {
+        page.drawText(roomNumberTrimmed, {  // trimした値を使用
           x: coords.roomNumber.x,
           y: coords.roomNumber.y,
           size: fontSize.large, // 12pt
