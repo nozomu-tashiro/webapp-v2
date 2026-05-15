@@ -443,6 +443,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
   };
 
   // 金額フィールドの変更ハンドラー（リアルタイムでカンマ表示）
+  // Bug②' 修正: 価格入力時に自動的に3桁カンマ区切りを適用
   const handlePriceChange = (e) => {
     // 入力値から数字のみ抽出（カンマを除去）
     const rawValue = e.target.value.replace(/[^\d]/g, '');
