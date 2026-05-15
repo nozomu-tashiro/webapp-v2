@@ -50,48 +50,60 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
   const handleMonthChange = (e) => {
     let val = e.target.value.replace(/\D/g, '').slice(0, 2);
     
-    // 月のバリデーション: 0は入力不可、13以上は12に制限
+    // 月のバリデーション: 0は入力不可
     if (val === '0' || val === '00') {
       return; // 0は入力を拒否
     }
-    const numVal = parseInt(val, 10);
-    if (!isNaN(numVal) && numVal > 12) {
-      val = '12'; // 12を超える場合は12に制限
+    
+    // 2桁入力された場合のみバリデーション実行
+    if (val.length === 2) {
+      const numVal = parseInt(val, 10);
+      if (!isNaN(numVal) && numVal > 12) {
+        val = '12'; // 12を超える場合は12に制限
+      }
+      dayRef.current?.focus(); // 2桁入力完了で日にフォーカス移動
+    }
+    // 1桁の場合は、2以上なら次の入力を待つ（1→12の可能性があるため）
+    else if (val.length === 1) {
+      const numVal = parseInt(val, 10);
+      // 2以上の場合は10-12の可能性があるので次の入力を待つ
+      // 0は既に上でブロック済み
     }
     
     setMonth(val);
-    if (val.length === 2) {
-      dayRef.current?.focus();
-    }
     updateParent(year, val, day);
   };
 
   const handleDayChange = (e) => {
     let val = e.target.value.replace(/\D/g, '').slice(0, 2);
     
-    // 日のバリデーション: 0は入力不可、月に応じた最大日数チェック
+    // 日のバリデーション: 0は入力不可
     if (val === '0' || val === '00') {
       return; // 0は入力を拒否
     }
     
-    const numVal = parseInt(val, 10);
-    if (!isNaN(numVal)) {
-      // 月が入力されている場合、その月の最大日数をチェック
-      if (month && month !== '') {
-        const monthNum = parseInt(month, 10);
-        const yearNum = year && year.length === 4 ? parseInt(year, 10) : 2024;
-        const maxDay = new Date(yearNum, monthNum, 0).getDate(); // その月の最終日
-        
-        if (numVal > maxDay) {
-          val = maxDay.toString().padStart(2, '0'); // 最大日数に制限
-        }
-      } else {
-        // 月が未入力の場合は31日まで
-        if (numVal > 31) {
-          val = '31';
+    // 2桁入力された場合のみバリデーション実行
+    if (val.length === 2) {
+      const numVal = parseInt(val, 10);
+      if (!isNaN(numVal)) {
+        // 月が入力されている場合、その月の最大日数をチェック
+        if (month && month !== '') {
+          const monthNum = parseInt(month, 10);
+          const yearNum = year && year.length === 4 ? parseInt(year, 10) : 2024;
+          const maxDay = new Date(yearNum, monthNum, 0).getDate(); // その月の最終日
+          
+          if (numVal > maxDay) {
+            val = maxDay.toString().padStart(2, '0'); // 最大日数に制限
+          }
+        } else {
+          // 月が未入力の場合は31日まで
+          if (numVal > 31) {
+            val = '31';
+          }
         }
       }
     }
+    // 1桁の場合は、4以上なら次の入力を待つ（例: 3→31の可能性）
     
     setDay(val);
     updateParent(year, month, val);
@@ -100,9 +112,21 @@ const CustomDateInput = ({ value = '', onChange, disabled = false, style = {} })
   // 月のフィールドからフォーカスが外れたときに自動0埋め
   const handleMonthBlur = () => {
     if (month.length === 1 && month !== '') {
-      const paddedMonth = '0' + month;
-      setMonth(paddedMonth);
-      updateParent(year, paddedMonth, day);
+      const numVal = parseInt(month, 10);
+      // 1-9の場合のみ0埋め（01-09にする）
+      if (numVal >= 1 && numVal <= 9) {
+        const paddedMonth = '0' + month;
+        setMonth(paddedMonth);
+        updateParent(year, paddedMonth, day);
+      }
+    }
+    // 2桁入力されている場合でも、13以上なら12に修正
+    else if (month.length === 2) {
+      const numVal = parseInt(month, 10);
+      if (numVal > 12) {
+        setMonth('12');
+        updateParent(year, '12', day);
+      }
     }
   };
 
