@@ -288,6 +288,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
   // ひらがな・全角カタカナを半角カナに変換する関数
   const convertToHalfKana = (str) => {
+    console.log('convertToHalfKana 入力:', str);
+    
     // 全角カタカナを半角カナに変換するマップ
     const kanaMap = {
       'ガ': 'ｶﾞ', 'ギ': 'ｷﾞ', 'グ': 'ｸﾞ', 'ゲ': 'ｹﾞ', 'ゴ': 'ｺﾞ',
@@ -314,44 +316,62 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     let result = '';
     for (let i = 0; i < str.length; i++) {
       const char = str[i];
+      const charCode = char.charCodeAt(0);
       
-      // 半角カナはそのまま（ｱ-ﾝ、濁点ﾞ、半濁点ﾟ）
-      if (char >= 'ｦ' && char <= 'ﾟ') {
+      console.log(`  文字[${i}]: '${char}' (U+${charCode.toString(16).toUpperCase()})`);
+      
+      // 半角カナはそのまま（ｦ-ﾟ: U+FF66-U+FF9F）
+      if (charCode >= 0xFF66 && charCode <= 0xFF9F) {
+        console.log(`    → 半角カナ: そのまま '${char}'`);
         result += char;
       }
-      // ひらがなは全角カタカナに変換してから半角カナに
-      else if (char >= 'ぁ' && char <= 'ん') {
-        const kata = String.fromCharCode(char.charCodeAt(0) + 0x60);
-        result += kanaMap[kata] || kata;
+      // ひらがなは全角カタカナに変換してから半角カナに（ぁ-ん: U+3041-U+3093）
+      else if (charCode >= 0x3041 && charCode <= 0x3093) {
+        const kata = String.fromCharCode(charCode + 0x60);
+        const converted = kanaMap[kata] || kata;
+        console.log(`    → ひらがな: '${char}' → カタカナ '${kata}' → 半角 '${converted}'`);
+        result += converted;
       }
       // 全角カタカナは半角カナに変換
       else if (kanaMap[char]) {
+        console.log(`    → 全角カタカナ: '${char}' → 半角 '${kanaMap[char]}'`);
         result += kanaMap[char];
       }
       // それ以外（スペースなど）はそのまま
       else {
+        console.log(`    → その他: そのまま '${char}'`);
         result += char;
       }
     }
     
+    console.log('convertToHalfKana 出力:', result);
     return result;
   };
 
   // フリガナ入力ハンドラー（ひらがな・全角カタカナ→半角カナ自動変換、不正文字入力拒否）
   const handleKanaChange = (e, fieldName) => {
-    let value = e.target.value;
+    const inputValue = e.target.value;
+    
+    console.log('=== handleKanaChange Debug ===');
+    console.log('fieldName:', fieldName);
+    console.log('inputValue:', inputValue);
+    console.log('inputValue.length:', inputValue.length);
     
     // 許可する文字: ひらがな、全角カタカナ、半角カナ、スペース、長音、中黒
     const allowedPattern = /^[ぁ-んァ-ヴｱ-ﾝﾞﾟー・\s]*$/;
     
-    // 不正な文字が含まれている場合は入力を拒否
-    if (!allowedPattern.test(value)) {
-      // 不正な文字を除去
-      value = value.replace(/[^ぁ-んァ-ヴｱ-ﾝﾞﾟー・\s]/g, '');
+    // 不正な文字が含まれている場合は除去
+    let cleanedValue = inputValue;
+    if (!allowedPattern.test(inputValue)) {
+      cleanedValue = inputValue.replace(/[^ぁ-んァ-ヴｱ-ﾝﾞﾟー・\s]/g, '');
+      console.log('不正文字除去後:', cleanedValue);
     }
     
     // ひらがな・全角カタカナを半角カナに変換
-    const convertedValue = convertToHalfKana(value);
+    const convertedValue = convertToHalfKana(cleanedValue);
+    console.log('変換後:', convertedValue);
+    console.log('変換後.length:', convertedValue.length);
+    console.log('==============================');
     
     setFormData(prev => ({
       ...prev,
