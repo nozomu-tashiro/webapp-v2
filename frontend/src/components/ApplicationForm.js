@@ -346,6 +346,14 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     }
   }, [editMode, editData]);
 
+  // デバッグ: servicePriceの値を監視
+  useEffect(() => {
+    if (formData.servicePrice) {
+      const formatted = Number(formData.servicePrice).toLocaleString('ja-JP');
+      console.log('💰 ServicePrice Debug - Raw:', formData.servicePrice, '| Formatted:', formatted);
+    }
+  }, [formData.servicePrice]);
+
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -446,15 +454,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
   const handlePriceChange = (e) => {
     // 入力値から数字のみ抽出
     const rawValue = e.target.value.replace(/[^\d]/g, '');
-    
-    // 数値が空の場合
-    if (rawValue === '') {
-      setFormData(prev => ({ ...prev, servicePrice: '' }));
-      return;
-    }
-    
-    // 数値を3桁区切りカンマ付きで表示用にフォーマット
-    const formattedValue = Number(rawValue).toLocaleString('ja-JP');
+    console.log('💰 Price input:', e.target.value, '→ Raw:', rawValue);
     
     // 内部的には数値文字列として保持（カンマなし）
     setFormData(prev => ({ ...prev, servicePrice: rawValue }));
