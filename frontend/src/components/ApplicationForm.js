@@ -2155,23 +2155,29 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               <h2>⚠️ メール送信に失敗しました</h2>
             </div>
             
-            <div className="modal-body">
+            <div className="modal-body" style={{ textAlign: 'center', padding: '30px' }}>
               <p style={{ marginBottom: '20px' }}>
                 システムエラーのため、メール送信できませんでした。<br />
                 お手数ですが、FAXで申込書を送信してください。
               </p>
               
-              <div className="fax-info-box">
-                <h3>【FAXでの送信先】</h3>
-                <div className="fax-company">
+              <div style={{ 
+                backgroundColor: '#f5f5f5', 
+                border: '2px solid #e0e0e0', 
+                borderRadius: '8px', 
+                margin: '20px 0', 
+                padding: '25px' 
+              }}>
+                <h3 style={{ color: '#333', fontSize: '18px', fontWeight: 600, margin: '0 0 15px' }}>【FAXでの送信先】</h3>
+                <div style={{ color: '#333', fontSize: '20px', fontWeight: 600, margin: '10px 0' }}>
                   📠 いえらぶパートナーズ 駆付係
                 </div>
-                <div className="fax-number">
+                <div style={{ color: '#2196F3', fontSize: '36px', fontWeight: 700, letterSpacing: '2px', lineHeight: 1.2, margin: '15px 0' }}>
                   03-6240-3385
                 </div>
               </div>
               
-              <p className="fax-note">
+              <p style={{ color: '#666', fontSize: '14px', lineHeight: 1.6, marginTop: '20px' }}>
                 PDFはすでにダウンロードされています。<br />
                 印刷して上記FAX番号にお送りください。
               </p>
