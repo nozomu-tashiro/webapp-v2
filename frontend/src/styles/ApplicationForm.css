@@ -825,15 +825,17 @@ input[type="number"] {
 .modal-pdf-preview .modal-body {
   min-height: 400px;
   padding: 0;
-  overflow: hidden;
+  overflow: auto;
   display: flex;
   flex-direction: column;
 }
 
 .modal-pdf-preview iframe {
   width: 100%;
+  min-height: 100%;
   flex: 1;
   border: none;
+  transform-origin: top left;
 }
 
 /* モーダルフッター */
