@@ -869,6 +869,13 @@ input[type="number"] {
   display: flex;
 }
 
+/* FAXダイアログのモーダルボディは通常のブロック表示 */
+.modal-fax-dialog .modal-body {
+  display: block !important;
+  padding: 30px !important;
+  text-align: center !important;
+}
+
 .modal-pdf-preview .modal-body {
   min-height: 400px;
   padding: 0;
