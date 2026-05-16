@@ -21,7 +21,9 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
 // Routes
 const pdfRoutes = require('./routes/pdfRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
 app.use('/api/pdf', pdfRoutes);
+app.use('/api/application', applicationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -37,7 +39,9 @@ app.get('/', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     endpoints: {
       health: 'GET /api/health',
-      generatePDF: 'POST /api/pdf/generate'
+      generatePDF: 'POST /api/pdf/generate',
+      submitApplication: 'POST /api/application/submit',
+      getErrors: 'GET /api/application/errors'
     }
   });
 });
