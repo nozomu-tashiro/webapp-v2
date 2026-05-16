@@ -771,11 +771,11 @@ input[type="number"] {
 }
 
 /* PDFプレビューモーダル */
-.modal-pdf-preview {
-  width: calc(100vw - 40px);
-  height: calc(100vh - 40px);
-  max-width: none;
-  max-height: none;
+.modal-content.modal-pdf-preview {
+  width: calc(100vw - 40px) !important;
+  height: calc(100vh - 40px) !important;
+  max-width: none !important;
+  max-height: none !important;
   margin: 20px;
 }
 
