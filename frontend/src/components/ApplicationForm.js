@@ -2156,7 +2156,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             </div>
             
             <div className="modal-body">
-              <p>
+              <p style={{ marginBottom: '20px' }}>
                 システムエラーのため、メール送信できませんでした。<br />
                 お手数ですが、FAXで申込書を送信してください。
               </p>
