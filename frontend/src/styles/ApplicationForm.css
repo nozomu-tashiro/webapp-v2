@@ -772,10 +772,11 @@ input[type="number"] {
 
 /* PDFプレビューモーダル */
 .modal-pdf-preview {
-  width: 98vw;
-  height: 98vh;
+  width: calc(100vw - 20px);
+  height: calc(100vh - 20px);
   max-width: none;
   max-height: none;
+  margin: 10px;
 }
 
 /* FAXダイアログ */
