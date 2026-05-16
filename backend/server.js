@@ -30,6 +30,33 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Application Form System API is running' });
 });
 
+// Version check - デプロイされているコードバージョンを確認
+app.get('/api/version', (req, res) => {
+  const fs = require('fs');
+  const pdfGeneratorPath = path.join(__dirname, 'utils', 'pdfGeneratorV5.js');
+  
+  // pdfGeneratorV5.jsのファイル更新日時を取得
+  let pdfGeneratorModified = 'unknown';
+  try {
+    const stats = fs.statSync(pdfGeneratorPath);
+    pdfGeneratorModified = stats.mtime.toISOString();
+  } catch (err) {
+    pdfGeneratorModified = 'error: ' + err.message;
+  }
+  
+  res.json({ 
+    status: 'ok',
+    version: '2.0.0-fixed',
+    deployedAt: new Date().toISOString(),
+    pdfGeneratorModified,
+    features: {
+      guaranteeCheckbox: true,
+      phoneOrderFixed: true,
+      postalCodePrinting: true
+    }
+  });
+});
+
 // Root endpoint - API情報を返す
 app.get('/', (req, res) => {
   res.json({ 
