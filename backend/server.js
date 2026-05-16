@@ -37,9 +37,17 @@ app.get('/api/version', (req, res) => {
   
   // pdfGeneratorV5.jsのファイル更新日時を取得
   let pdfGeneratorModified = 'unknown';
+  let hasGuaranteeCheckbox = false;
+  let hasPhoneOrderFix = false;
+  
   try {
     const stats = fs.statSync(pdfGeneratorPath);
     pdfGeneratorModified = stats.mtime.toISOString();
+    
+    // ファイル内容をチェック
+    const content = fs.readFileSync(pdfGeneratorPath, 'utf8');
+    hasGuaranteeCheckbox = content.includes('保証番号入力済チェックマーク');
+    hasPhoneOrderFix = content.includes('固定電話が上、携帯電話が下');
   } catch (err) {
     pdfGeneratorModified = 'error: ' + err.message;
   }
@@ -50,8 +58,8 @@ app.get('/api/version', (req, res) => {
     deployedAt: new Date().toISOString(),
     pdfGeneratorModified,
     features: {
-      guaranteeCheckbox: true,
-      phoneOrderFixed: true,
+      guaranteeCheckbox: hasGuaranteeCheckbox,
+      phoneOrderFixed: hasPhoneOrderFix,
       postalCodePrinting: true
     }
   });
