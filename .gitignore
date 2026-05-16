@@ -60,3 +60,4 @@ check_env.html
 excel_images_new/
 backend/templates/*.png
 backend/test_*.pdf
+.vercel
