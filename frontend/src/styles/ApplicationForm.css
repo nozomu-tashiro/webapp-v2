@@ -818,6 +818,7 @@ input[type="number"] {
   color: #2196F3;
   margin: 15px 0;
   letter-spacing: 2px;
+  line-height: 1.2;
 }
 
 .modal-fax-dialog .fax-note {
