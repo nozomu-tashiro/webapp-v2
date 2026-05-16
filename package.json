@@ -14,7 +14,14 @@
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
     "vercel-build": "cd frontend && npm install && npm run build && cd .. && mv frontend/build build"
   },
-  "keywords": ["application", "pdf", "form"],
+  "keywords": [
+    "application",
+    "pdf",
+    "form"
+  ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "vercel": "^54.1.0"
+  }
 }

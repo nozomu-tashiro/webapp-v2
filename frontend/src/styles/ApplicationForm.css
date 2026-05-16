@@ -772,8 +772,10 @@ input[type="number"] {
 
 /* PDFプレビューモーダル */
 .modal-pdf-preview {
-  width: 95vw;
-  height: 95vh;
+  width: 98vw;
+  height: 98vh;
+  max-width: none;
+  max-height: none;
 }
 
 /* FAXダイアログ */
@@ -816,10 +818,21 @@ input[type="number"] {
   flex: 1;
   overflow: auto;
   padding: 0;
+  display: flex;
 }
 
 .modal-pdf-preview .modal-body {
   min-height: 400px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-pdf-preview iframe {
+  width: 100%;
+  flex: 1;
+  border: none;
 }
 
 /* モーダルフッター */

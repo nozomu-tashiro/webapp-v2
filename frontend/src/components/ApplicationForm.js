@@ -1020,9 +1020,22 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     setLoading(true);
     setError('');
     setProgress(0);
+    setProgressStep('書類レイアウトを作成しています');
 
     try {
       const apiUrl = process.env.REACT_APP_API_URL || '';
+      
+      // プログレスバーのアニメーション
+      setTimeout(() => setProgress(20), 100);
+      setTimeout(() => {
+        setProgress(40);
+        setProgressStep('データを準備しています');
+      }, 300);
+      setTimeout(() => setProgress(60), 500);
+      setTimeout(() => {
+        setProgress(80);
+        setProgressStep('PDFを書き出しています');
+      }, 700);
       
       // PDFプレビュー用の生成
       const response = await axios.post(`${apiUrl}/api/pdf/generate`, formData, {
@@ -1031,6 +1044,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       });
 
       setProgress(100);
+      setProgressStep('最終調整をしています');
 
       // Blob URLを作成（PDFのMIMEタイプを明示）
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
@@ -1045,6 +1059,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       console.error('PDF generation error:', err);
       setError(`PDFの生成に失敗しました: ${err.message}`);
       setLoading(false);
+      setProgressStep('');
       alert(`PDFの生成に失敗しました: ${err.message}`);
     }
   };
@@ -2110,10 +2125,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                 <iframe
                   src={pdfBlobUrl}
                   type="application/pdf"
-                  width="100%"
-                  height="100%"
                   title="PDF Preview"
-                  style={{ border: 'none', minHeight: '500px' }}
                 />
               )}
             </div>
