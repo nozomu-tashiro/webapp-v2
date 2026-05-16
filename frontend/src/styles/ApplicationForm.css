@@ -836,6 +836,8 @@ input[type="number"] {
   flex: 1;
   border: none;
   transform-origin: top left;
+  /* PDFを横幅いっぱいに表示 */
+  object-fit: fill;
 }
 
 /* モーダルフッター */
