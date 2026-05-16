@@ -786,8 +786,8 @@ input[type="number"] {
 }
 
 .modal-fax-dialog .modal-body {
-  text-align: center;
-  padding: 30px;
+  text-align: center !important;
+  padding: 30px !important;
 }
 
 .modal-fax-dialog .fax-info-box {
