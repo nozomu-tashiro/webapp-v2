@@ -1032,8 +1032,9 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
       setProgress(100);
 
-      // Blob URLを作成
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      // Blob URLを作成（PDFのMIMEタイプを明示）
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(pdfBlob);
       setPdfBlobUrl(url);
 
       // プレビューモーダルを表示
@@ -2108,10 +2109,11 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               {pdfBlobUrl && (
                 <iframe
                   src={pdfBlobUrl}
+                  type="application/pdf"
                   width="100%"
                   height="100%"
                   title="PDF Preview"
-                  style={{ border: 'none' }}
+                  style={{ border: 'none', minHeight: '500px' }}
                 />
               )}
             </div>
