@@ -716,33 +716,68 @@ input[type="number"] {
 .form-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 24px;
+  align-items: center; /* 中央揃え */
+  gap: 16px;
+  margin-top: 32px;
+  margin-bottom: 32px;
 }
 
 .btn-submit-primary {
-  /* 既存のbtn-submitスタイルを継承 */
+  /* メインボタンを大きく目立たせる */
+  min-width: 400px;
+  padding: 18px 48px;
+  font-size: 18px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-submit-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
+  background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+}
+
+.btn-submit-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
 }
 
 .btn-download-only {
   background: transparent;
   border: none;
-  color: #2196F3;
-  font-size: 14px;
-  padding: 8px;
+  color: #757575; /* より控えめなグレー */
+  font-size: 13px; /* 小さめ */
+  padding: 6px 12px;
   cursor: pointer;
   text-decoration: underline;
   transition: color 0.2s;
+  opacity: 0.8;
 }
 
 .btn-download-only:hover {
-  color: #1976D2;
+  color: #424242;
+  opacity: 1;
 }
 
 .btn-download-only:disabled {
   color: #ccc;
   cursor: not-allowed;
   text-decoration: none;
+  opacity: 0.5;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .btn-submit-primary {
+    min-width: 100%;
+    max-width: 400px;
+    font-size: 16px;
+    padding: 16px 32px;
+  }
 }
 
 /* モーダルオーバーレイ */
