@@ -2155,32 +2155,29 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               <h2>⚠️ メール送信に失敗しました</h2>
             </div>
             
-            <div className="modal-body" style={{ textAlign: 'center', padding: '30px' }}>
-              <p style={{ marginBottom: '20px' }}>
+            <div className="modal-body">
+              <p>
                 システムエラーのため、メール送信できませんでした。<br />
                 お手数ですが、FAXで申込書を送信してください。
               </p>
               
-              <div style={{ 
-                backgroundColor: '#f5f5f5', 
-                padding: '20px', 
-                borderRadius: '8px',
-                marginBottom: '20px'
-              }}>
-                <h3 style={{ marginBottom: '10px' }}>【FAXでの送信先】</h3>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '15px' }}>
-                  📠 いえらぶパートナーズ 駆付係<br />
-                  <span style={{ fontSize: '32px', color: '#2196F3' }}>03-6240-3385</span>
+              <div className="fax-info-box">
+                <h3>【FAXでの送信先】</h3>
+                <div className="fax-company">
+                  📠 いえらぶパートナーズ 駆付係
+                </div>
+                <div className="fax-number">
+                  03-6240-3385
                 </div>
               </div>
               
-              <p style={{ fontSize: '14px', color: '#666' }}>
+              <p className="fax-note">
                 PDFはすでにダウンロードされています。<br />
                 印刷して上記FAX番号にお送りください。
               </p>
             </div>
             
-            <div className="modal-footer" style={{ justifyContent: 'center' }}>
+            <div className="modal-footer">
               <button className="btn-secondary" onClick={closeFaxDialog}>
                 閉じる
               </button>
