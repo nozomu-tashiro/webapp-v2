@@ -2123,7 +2123,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             <div className="modal-body">
               {pdfBlobUrl && (
                 <iframe
-                  src={`${pdfBlobUrl}#zoom=200&pagemode=none&scrollbar=1&toolbar=1&navpanes=0`}
+                  src={`${pdfBlobUrl}#zoom=125&pagemode=none&scrollbar=1&toolbar=1&navpanes=0`}
                   type="application/pdf"
                   title="PDF Preview"
                   className="pdf-iframe"
