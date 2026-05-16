@@ -310,6 +310,12 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
   const [progress, setProgress] = useState(0);
   const [progressStep, setProgressStep] = useState('');
   
+  // メール送信機能用の新しいstate
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [showFaxDialog, setShowFaxDialog] = useState(false);
+  
   // Accordion state for optional sections
   const [accordionState, setAccordionState] = useState({
     basicInfo: true,      // デフォルトで開く
@@ -1003,6 +1009,113 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     }
   };
 
+  // ★ 新機能: PDF内容を確認して提出（プレビューモーダル表示）
+  const handlePreviewAndSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setProgress(0);
+
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      
+      // PDFプレビュー用の生成
+      const response = await axios.post(`${apiUrl}/api/pdf/generate`, formData, {
+        responseType: 'blob',
+        timeout: 120000
+      });
+
+      setProgress(100);
+
+      // Blob URLを作成
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      setPdfBlobUrl(url);
+
+      // プレビューモーダルを表示
+      setLoading(false);
+      setShowPreviewModal(true);
+
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      setError(`PDFの生成に失敗しました: ${err.message}`);
+      setLoading(false);
+      alert(`PDFの生成に失敗しました: ${err.message}`);
+    }
+  };
+
+  // ★ 新機能: PDFダウンロードのみ（メール送信なし）
+  const handleDownloadOnly = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    // 既存のhandleSubmit処理を実行（変更なし）
+    handleSubmit(e);
+  };
+
+  // ★ 新機能: いえらぶに送信（メール送信）
+  const handleSendToIerabu = async () => {
+    setSendingEmail(true);
+    setError('');
+
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      
+      const response = await axios.post(`${apiUrl}/api/application/submit`, formData, {
+        timeout: 180000 // 3分タイムアウト（リトライ時間を考慮）
+      });
+
+      if (response.data.success) {
+        // 送信成功
+        alert('✅ メール送信に成功しました！\n\nいえらぶパートナーズに申込書を送信しました。');
+        
+        // localStorage に送信済みフラグを追加（後で実装）
+        // TODO: emailSent, emailSentAt, emailStatus を保存
+        
+        // モーダルを閉じる
+        setShowPreviewModal(false);
+        
+        // 成功モーダルを表示
+        setShowSuccessModal(true);
+        
+      } else {
+        throw new Error(response.data.message || 'メール送信に失敗しました');
+      }
+
+    } catch (err) {
+      console.error('Email sending error:', err);
+      
+      // FAX番号を表示
+      setSendingEmail(false);
+      setShowPreviewModal(false);
+      setShowFaxDialog(true);
+      
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  // ★ 新機能: モーダルを閉じる
+  const closePreviewModal = () => {
+    setShowPreviewModal(false);
+    if (pdfBlobUrl) {
+      window.URL.revokeObjectURL(pdfBlobUrl);
+      setPdfBlobUrl(null);
+    }
+  };
+
+  // ★ 新機能: FAXダイアログを閉じる
+  const closeFaxDialog = () => {
+    setShowFaxDialog(false);
+  };
+
   // Get available payment methods based on selected product
   // 1年更新は最後に配置（基本的に選ばれないため）
   const getAvailablePaymentMethods = () => {
@@ -1042,7 +1155,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="application-form">
+      <form onSubmit={handlePreviewAndSubmit} className="application-form">
         
         {/* Error message */}
         {error && (
@@ -1826,19 +1939,30 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
           </section>
         )}
 
-        {/* Submit button */}
+        {/* Submit buttons */}
         <div className="form-actions">
           <button
             type="submit"
-            className="btn-submit"
+            className="btn-submit btn-submit-primary"
             disabled={loading}
             style={editingId ? {
               backgroundColor: '#ff9800',
               borderColor: '#f57c00'
             } : {}}
           >
-            {loading ? 'PDF生成中...' : (editingId ? '✏️ 編集内容を保存してPDF再生成' : 'PDFを生成・ダウンロード')}
+            {loading ? 'PDF生成中...' : (editingId ? '✏️ 編集内容を保存してPDF再生成' : 'PDF内容を確認して提出する')}
           </button>
+          
+          {!editingId && (
+            <button
+              type="button"
+              className="btn-download-only"
+              disabled={loading}
+              onClick={handleDownloadOnly}
+            >
+              PDFダウンロードのみ（送信しない）
+            </button>
+          )}
         </div>
       </form>
 
@@ -1966,6 +2090,85 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ★ 新機能: PDFプレビューモーダル */}
+      {showPreviewModal && (
+        <div className="modal-overlay" onClick={closePreviewModal}>
+          <div className="modal-content modal-pdf-preview" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>📄 PDF内容確認</h2>
+              <button className="modal-close-btn" onClick={closePreviewModal}>✕ 閉じる</button>
+            </div>
+            
+            <div className="modal-body">
+              {pdfBlobUrl && (
+                <iframe
+                  src={pdfBlobUrl}
+                  width="100%"
+                  height="100%"
+                  title="PDF Preview"
+                  style={{ border: 'none' }}
+                />
+              )}
+            </div>
+            
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={closePreviewModal}>
+                入力画面に戻る
+              </button>
+              <button 
+                className="btn-primary" 
+                onClick={handleSendToIerabu}
+                disabled={sendingEmail}
+              >
+                {sendingEmail ? '送信中...' : 'いえらぶに送信する'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ★ 新機能: FAX番号表示ダイアログ */}
+      {showFaxDialog && (
+        <div className="modal-overlay" onClick={closeFaxDialog}>
+          <div className="modal-content modal-fax-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>⚠️ メール送信に失敗しました</h2>
+            </div>
+            
+            <div className="modal-body" style={{ textAlign: 'center', padding: '30px' }}>
+              <p style={{ marginBottom: '20px' }}>
+                システムエラーのため、メール送信できませんでした。<br />
+                お手数ですが、FAXで申込書を送信してください。
+              </p>
+              
+              <div style={{ 
+                backgroundColor: '#f5f5f5', 
+                padding: '20px', 
+                borderRadius: '8px',
+                marginBottom: '20px'
+              }}>
+                <h3 style={{ marginBottom: '10px' }}>【FAXでの送信先】</h3>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '15px' }}>
+                  📠 いえらぶパートナーズ 駆付係<br />
+                  <span style={{ fontSize: '32px', color: '#2196F3' }}>03-6240-3385</span>
+                </div>
+              </div>
+              
+              <p style={{ fontSize: '14px', color: '#666' }}>
+                PDFはすでにダウンロードされています。<br />
+                印刷して上記FAX番号にお送りください。
+              </p>
+            </div>
+            
+            <div className="modal-footer" style={{ justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={closeFaxDialog}>
+                閉じる
+              </button>
             </div>
           </div>
         </div>
