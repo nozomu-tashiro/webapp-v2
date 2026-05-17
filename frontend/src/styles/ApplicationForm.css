@@ -974,4 +974,15 @@ input[type="number"] {
   cursor: not-allowed;
 }
 
+/* 編集モード用ボタンスタイル */
+.btn-edit-mode {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3) !important;
+}
+
+.btn-edit-mode:hover:not(:disabled) {
+  background: linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%) !important;
+  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4) !important;
+}
+
 /* ボタンUI改善 - 2026-05-17 デプロイ確認用 */

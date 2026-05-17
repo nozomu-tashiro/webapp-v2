@@ -1959,12 +1959,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
         <div className="form-actions">
           <button
             type="submit"
-            className="btn-submit btn-submit-primary"
+            className={`btn-submit btn-submit-primary ${editingId ? 'btn-edit-mode' : ''}`}
             disabled={loading}
-            style={editingId ? {
-              backgroundColor: '#ff9800',
-              borderColor: '#f57c00'
-            } : {}}
           >
             {loading ? 'PDF生成中...' : (editingId ? '✏️ 編集内容を保存してPDF再生成' : 'PDF内容を確認して提出する')}
           </button>
