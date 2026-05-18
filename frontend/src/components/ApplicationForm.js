@@ -2204,26 +2204,30 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
         </div>
       )}
 
-      {/* 🆕 送信確認ダイアログ（2026-05-18追加） */}
+      {/* 🆕 送信確認ダイアログ（2026-05-18 UI改善版） */}
       {showConfirmSendDialog && (
         <div className="modal-overlay" onClick={() => !sendingEmail && setShowConfirmSendDialog(false)}>
           <div
             className="modal-content modal-confirm-send"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '560px' }}
           >
             <div className="modal-header">
-              <h2>📧 メール送信内容の確認</h2>
+              <h2>
+                <span role="img" aria-label="email">📧</span>
+                メール送信内容の確認
+              </h2>
               {!sendingEmail && (
                 <button
                   className="modal-close"
                   onClick={() => setShowConfirmSendDialog(false)}
+                  aria-label="閉じる"
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    fontSize: '20px',
+                    fontSize: '22px',
                     cursor: 'pointer',
-                    color: '#666'
+                    padding: '0 4px',
+                    lineHeight: 1
                   }}
                 >
                   ×
@@ -2231,80 +2235,77 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               )}
             </div>
 
-            <div className="modal-body" style={{ padding: '20px 24px' }}>
-              <p style={{ margin: '0 0 16px', fontSize: '14px', color: '#555' }}>
-                以下の宛先に申込書（1枚目）を送信します。内容をご確認ください。
+            <div className="modal-body">
+              <p className="confirm-send-intro">
+                以下の宛先に <strong>申込書（1枚目）</strong> を送信します。<br />
+                内容をご確認のうえ、よろしければ「この内容で送信する」を押してください。
               </p>
 
-              <div style={{
-                background: '#f7f9fc',
-                border: '1px solid #e0e6ed',
-                borderRadius: '6px',
-                padding: '14px 16px',
-                marginBottom: '16px'
-              }}>
-                <div style={{ marginBottom: '10px' }}>
-                  <div style={{ fontSize: '12px', color: '#888', fontWeight: 600, marginBottom: '4px' }}>
-                    TO（メイン送信先）
+              {/* 宛先表示 */}
+              <div className="confirm-send-recipients">
+                {/* TO */}
+                <div className="confirm-send-recipient-row">
+                  <div className="confirm-send-label">
+                    宛先 (TO)
+                    <span className="badge">メイン送信先</span>
                   </div>
-                  <div style={{ fontSize: '14px', color: '#333' }}>
-                    motfax-kaketsuke@ielove-partners.jp
+                  <div className="confirm-send-emails">
+                    <div className="confirm-send-email-item">
+                      motfax-kaketsuke@ielove-partners.jp
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#888', fontWeight: 600, marginBottom: '4px' }}>
-                    CC（自動付与）
+
+                {/* CC */}
+                <div className="confirm-send-recipient-row">
+                  <div className="confirm-send-label">
+                    CC（写し）
+                    <span className="badge badge-secondary">自動付与</span>
                   </div>
-                  <div style={{ fontSize: '14px', color: '#333', lineHeight: 1.7 }}>
-                    kaketsuke.partners@ielove-partners.jp
-                    {formData.agentInfo && formData.agentInfo.email && (
-                      <>
-                        <br />
-                        {formData.agentInfo.email}（代理店登録メール）
-                      </>
+                  <div className="confirm-send-emails">
+                    <div className="confirm-send-email-item">
+                      kaketsuke.partners@ielove-partners.jp
+                      <span className="email-note">いえらぶ控え</span>
+                    </div>
+                    {formData.agentInfo && formData.agentInfo.email ? (
+                      <div className="confirm-send-email-item" style={{ marginTop: '4px' }}>
+                        {formData.agentInfo.email}
+                        <span className="email-note">代理店登録メール</span>
+                      </div>
+                    ) : (
+                      <div className="confirm-send-email-empty" style={{ marginTop: '4px' }}>
+                        ※ 代理店登録メールは未設定です
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{
-                  fontSize: '13px',
-                  color: '#333',
-                  fontWeight: 600,
-                  display: 'block',
-                  marginBottom: '6px'
-                }}>
-                  📧 追加でCCしたいメール（任意）
+              {/* 追加CC入力 */}
+              <div className="confirm-send-additional">
+                <label className="confirm-send-additional-label" htmlFor="additionalCcInput">
+                  <span role="img" aria-label="plus">➕</span>
+                  追加でCCしたいメールアドレス（任意）
                 </label>
                 <input
+                  id="additionalCcInput"
                   type="email"
+                  className="confirm-send-additional-input"
                   value={additionalCcEmail}
                   onChange={(e) => setAdditionalCcEmail(e.target.value)}
                   placeholder="例: yourname@ielove-partners.jp"
                   disabled={sendingEmail}
-                  style={{
-                    width: '100%',
-                    padding: '8px 10px',
-                    fontSize: '14px',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    boxSizing: 'border-box'
-                  }}
+                  autoComplete="email"
                 />
-                <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
-                  ※ ご自身の手元にも控えを残したい場合などにご利用ください
+                <div className="confirm-send-additional-hint">
+                  ※ ご自身の手元にも控えを残したい場合などにご利用ください（空欄でもOK）
                 </div>
               </div>
 
-              <div style={{
-                background: '#fff8e1',
-                border: '1px solid #ffe082',
-                borderRadius: '4px',
-                padding: '10px 12px',
-                fontSize: '13px'
-              }}>
-                📎 添付ファイル: <strong>申込書（1枚目）.pdf</strong>
+              {/* 添付ファイル */}
+              <div className="confirm-send-attachment">
+                <span role="img" aria-label="attachment">📎</span>
+                <span>添付ファイル: <strong>申込書（1枚目）.pdf</strong></span>
               </div>
             </div>
 
