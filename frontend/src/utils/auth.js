@@ -140,9 +140,13 @@ export const validatePin = (pin) => {
 
 // 現在のログインユーザー情報を取得
 export const getCurrentUser = () => {
+  // メールアドレスは登録時に保存された auth_data から取得
+  // （sessionStorage には保存していないため）
+  const authData = getAuthData();
   return {
     agentCode: sessionStorage.getItem('agent_code'),
     agentName: sessionStorage.getItem('agent_name'),
+    email: authData?.email || '',
     isLoggedIn: isLoggedIn()
   };
 };

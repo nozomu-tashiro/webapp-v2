@@ -298,7 +298,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       codePart2: '', // 2桁（地域）
       codePart3: '', // 最大10桁（会員番号）
       codePart4: '', // 3桁（端末番号）
-      representativeName: ''
+      representativeName: '',
+      email: '' // 🆕 代理店登録メール（ログイン時の登録メール、CCで使用）
     }
   });
 
@@ -358,7 +359,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             codePart2,
             codePart3,
             codePart4,
-            code: `${codePart1}-${codePart2}-${codePart3}${codePart4 ? '-' + codePart4 : ''}`
+            code: `${codePart1}-${codePart2}-${codePart3}${codePart4 ? '-' + codePart4 : ''}`,
+            email: currentUser.email || prev.agentInfo.email || '' // 🆕 登録メールを自動投入（CC用）
           }
         }));
         console.log('Bug③: 代理店情報を自動入力:', currentUser);
@@ -375,7 +377,11 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       const codePart1 = parts[0] || '';
       const codePart2 = parts[1] || '';
       const codePart3 = parts[2] || '';
-      
+
+      // 編集モードでも email（CC用登録メール）が欠落しないよう補完
+      const currentUser = getCurrentUser();
+      const fallbackEmail = currentUser?.email || '';
+
       setFormData({
         ...editData,
         agentInfo: {
@@ -383,7 +389,8 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
           codePart1,
           codePart2,
           codePart3,
-          codePart4: '' // 端末番号は空
+          codePart4: '', // 端末番号は空
+          email: editData.agentInfo?.email || fallbackEmail // 🆕 旧データに email が無い場合も補完
         }
       });
       console.log('Edit mode activated, loaded data:', editData);

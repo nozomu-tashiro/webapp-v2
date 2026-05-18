@@ -192,90 +192,86 @@ const Login = ({ onLoginSuccess }) => {
 
       {/* PINを忘れた場合のモーダル */}
       {showForgotPinModal && (
-        <div className="modal-overlay" onClick={() => setShowForgotPinModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>PINの再発行について</h3>
-            <div className="modal-body">
-              {registeredEmail ? (
-                <>
-                  <p style={{ marginBottom: '16px', color: '#333' }}>
-                    ご登録いただいているメールアドレス：
-                  </p>
-                  <div style={{ 
-                    padding: '12px', 
-                    backgroundColor: '#f5f5f5', 
-                    borderRadius: '4px',
-                    marginBottom: '16px',
-                    fontWeight: 'bold',
-                    color: '#1976d2'
-                  }}>
-                    {registeredEmail}
-                  </div>
-                  <div style={{ 
-                    padding: '16px', 
-                    backgroundColor: '#fff3e0', 
-                    borderRadius: '4px',
-                    marginBottom: '16px',
-                    fontSize: '14px',
-                    lineHeight: '1.6'
-                  }}>
-                    <p style={{ margin: '0 0 12px 0', fontWeight: 'bold' }}>
-                      ⚠️ PINを失念した場合は、再度登録しなおしてください。
-                    </p>
-                    <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>
-                      【重要】再登録すると、以下のデータが削除されます：
-                    </p>
-                    <ul style={{ margin: '0 0 8px 0', paddingLeft: '20px' }}>
-                      <li>現在の認証情報（PIN、メールアドレス）</li>
-                      <li>保存済みの申込データ（PDF/CSV未出力分）</li>
-                    </ul>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
-                      ※ PDF/CSV出力済みのデータは影響ありません。
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div style={{ 
-                  padding: '16px', 
-                  backgroundColor: '#ffebee', 
-                  borderRadius: '4px',
-                  marginBottom: '16px'
-                }}>
-                  <p style={{ color: '#d32f2f', margin: 0 }}>
-                    ⚠️ メールアドレスが登録されていません。<br />
-                    再登録が必要です。
-                  </p>
-                </div>
+        <div
+          className="pin-recovery-overlay"
+          onClick={() => !loading && setShowForgotPinModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pin-recovery-title"
+        >
+          <div className="pin-recovery-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pin-recovery-header">
+              <h3 id="pin-recovery-title">
+                <span role="img" aria-label="key">🔑</span>
+                PINの再発行について
+              </h3>
+              {!loading && (
+                <button
+                  type="button"
+                  className="pin-recovery-close"
+                  onClick={() => setShowForgotPinModal(false)}
+                  aria-label="閉じる"
+                >
+                  ×
+                </button>
               )}
             </div>
-            <div className="modal-buttons" style={{ marginTop: '20px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button 
+
+            <div className="pin-recovery-body">
+              {registeredEmail ? (
+                <div className="pin-recovery-section">
+                  <p className="pin-recovery-label">ご登録のメールアドレス</p>
+                  <div className="pin-recovery-email">
+                    <span role="img" aria-label="email" className="pin-recovery-email-icon">✉️</span>
+                    <span className="pin-recovery-email-address">{registeredEmail}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="pin-recovery-section">
+                  <div className="pin-recovery-alert pin-recovery-alert--error">
+                    <p className="pin-recovery-alert-title">
+                      <span role="img" aria-label="warning">⚠️</span>
+                      メールアドレスが登録されていません
+                    </p>
+                    <p className="pin-recovery-alert-text">
+                      再登録が必要です。
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="pin-recovery-alert pin-recovery-alert--warning">
+                <p className="pin-recovery-alert-title">
+                  <span role="img" aria-label="warning">⚠️</span>
+                  PINを失念した場合は、再度登録しなおしてください
+                </p>
+                <p className="pin-recovery-alert-subtitle">
+                  【重要】再登録すると、以下のデータが削除されます：
+                </p>
+                <ul className="pin-recovery-list">
+                  <li>現在の認証情報（PIN、メールアドレス）</li>
+                  <li>保存済みの申込データ（PDF/CSV未出力分）</li>
+                </ul>
+                <p className="pin-recovery-note">
+                  ※ PDF/CSV出力済みのデータは影響ありません。
+                </p>
+              </div>
+            </div>
+
+            <div className="pin-recovery-footer">
+              <button
+                type="button"
                 onClick={() => setShowForgotPinModal(false)}
-                className="btn-secondary"
-                style={{
-                  padding: '10px 24px',
-                  backgroundColor: '#f5f5f5',
-                  color: '#666',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className="pin-recovery-btn pin-recovery-btn--secondary"
+                disabled={loading}
               >
                 閉じる
               </button>
-              <button 
+              <button
+                type="button"
                 onClick={handleReRegister}
-                className="btn-primary"
+                className="pin-recovery-btn pin-recovery-btn--danger"
                 disabled={loading}
-                style={{
-                  padding: '10px 24px',
-                  backgroundColor: '#d32f2f',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.6 : 1
-                }}
               >
                 {loading ? '削除中...' : '再登録画面へ'}
               </button>

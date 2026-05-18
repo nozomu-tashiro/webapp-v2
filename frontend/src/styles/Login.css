@@ -193,3 +193,260 @@
     font-size: 18px;
   }
 }
+
+/* =========================================
+   PIN再発行モーダル（pin-recovery-*）
+   独自ネームスペースで他CSSと衝突しない設計
+   ========================================= */
+.pin-recovery-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: pinRecoveryOverlayFadeIn 0.18s ease-out;
+}
+
+@keyframes pinRecoveryOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pin-recovery-modal {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  animation: pinRecoveryModalIn 0.22s ease-out;
+}
+
+@keyframes pinRecoveryModalIn {
+  from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ヘッダー */
+.pin-recovery-header {
+  background: linear-gradient(135deg, #003366 0%, #004488 100%);
+  color: #ffffff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pin-recovery-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+.pin-recovery-close {
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.pin-recovery-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* 本文 */
+.pin-recovery-body {
+  padding: 22px 24px;
+  overflow-y: auto;
+  display: block;
+}
+
+.pin-recovery-section {
+  margin-bottom: 18px;
+}
+
+.pin-recovery-label {
+  font-size: 13px;
+  color: #555;
+  margin: 0 0 8px 0;
+  font-weight: 500;
+}
+
+.pin-recovery-email {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background-color: #f0f7ff;
+  border: 1px solid #cfe2ff;
+  border-radius: 8px;
+  word-break: break-all;
+}
+
+.pin-recovery-email-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.pin-recovery-email-address {
+  font-size: 15px;
+  font-weight: 600;
+  color: #003366;
+  letter-spacing: 0.2px;
+}
+
+/* 警告ボックス */
+.pin-recovery-alert {
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.pin-recovery-alert--warning {
+  background-color: #fff7e6;
+  border: 1px solid #ffd591;
+  color: #5c3c00;
+}
+
+.pin-recovery-alert--error {
+  background-color: #fff1f0;
+  border: 1px solid #ffa39e;
+  color: #a8071a;
+}
+
+.pin-recovery-alert-title {
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pin-recovery-alert-subtitle {
+  margin: 8px 0 6px 0;
+  font-weight: 700;
+}
+
+.pin-recovery-alert-text {
+  margin: 0;
+}
+
+.pin-recovery-list {
+  margin: 6px 0;
+  padding-left: 22px;
+}
+
+.pin-recovery-list li {
+  margin-bottom: 2px;
+}
+
+.pin-recovery-note {
+  margin: 8px 0 0 0;
+  font-size: 12.5px;
+  color: #7a5a00;
+  opacity: 0.85;
+}
+
+/* フッター */
+.pin-recovery-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  background-color: #fafafa;
+  border-top: 1px solid #eee;
+}
+
+.pin-recovery-btn {
+  min-width: 110px;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.pin-recovery-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pin-recovery-btn--secondary {
+  background-color: #ffffff;
+  color: #555;
+  border-color: #d0d0d0;
+}
+
+.pin-recovery-btn--secondary:hover:not(:disabled) {
+  background-color: #f5f5f5;
+  border-color: #b8b8b8;
+}
+
+.pin-recovery-btn--danger {
+  background-color: #d32f2f;
+  color: #ffffff;
+  border-color: #b71c1c;
+  box-shadow: 0 2px 6px rgba(211, 47, 47, 0.25);
+}
+
+.pin-recovery-btn--danger:hover:not(:disabled) {
+  background-color: #b71c1c;
+  border-color: #8c1313;
+}
+
+/* モバイル */
+@media (max-width: 600px) {
+  .pin-recovery-modal {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    border-radius: 10px;
+  }
+  .pin-recovery-header {
+    padding: 14px 18px;
+  }
+  .pin-recovery-header h3 {
+    font-size: 16px;
+  }
+  .pin-recovery-body {
+    padding: 18px;
+  }
+  .pin-recovery-footer {
+    padding: 12px 16px;
+  }
+  .pin-recovery-btn {
+    min-width: 0;
+    flex: 1;
+    padding: 10px 12px;
+  }
+}
