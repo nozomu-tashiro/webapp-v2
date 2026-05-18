@@ -1,12 +1,39 @@
 const express = require('express');
 const router = express.Router();
+const { PDFDocument } = require('pdf-lib');
 const pdfGeneratorV5 = require('../utils/pdfGeneratorV5');
 const emailSender = require('../utils/emailSender');
 const errorLogger = require('../utils/errorLogger');
 
 /**
+ * PDF buffer から 1ページ目だけを抜き出す
+ * @param {Buffer} pdfBuffer - 元PDF（4ページつづり）のバッファ
+ * @returns {Promise<Buffer>} - 1ページPDFのバッファ
+ */
+async function extractFirstPage(pdfBuffer) {
+  const fullPdf = await PDFDocument.load(pdfBuffer);
+  const totalPages = fullPdf.getPageCount();
+
+  if (totalPages === 0) {
+    throw new Error('PDF has no pages');
+  }
+
+  const firstPageDoc = await PDFDocument.create();
+  const [firstPage] = await firstPageDoc.copyPages(fullPdf, [0]);
+  firstPageDoc.addPage(firstPage);
+  const bytes = await firstPageDoc.save();
+  return Buffer.from(bytes);
+}
+
+/**
  * POST /api/application/submit
- * PDF生成 + メール送信
+ * PDF生成 + 1枚目だけ抜き出し + Resend経由でメール送信
+ *
+ * 送信先：
+ *   TO: motfax-kaketsuke@ielove-partners.jp（RPA自動受付）
+ *   CC: kaketsuke.partners@ielove-partners.jp（人的フォロー）
+ *       + 代理店登録メール（agentInfo.email）
+ *       + 任意追加メール（contactEmail）※フロントで送信確認ダイアログで入力
  */
 router.post('/submit', async (req, res) => {
   try {
@@ -35,10 +62,15 @@ router.post('/submit', async (req, res) => {
       agentCode: formData.agentInfo.code
     });
 
-    // ステップ1: PDF生成
-    console.log('📄 Generating PDF...');
+    // ステップ1: PDF生成（4ページつづり）
+    console.log('📄 Generating PDF (full 4 pages)...');
     const pdfBuffer = await pdfGeneratorV5.generatePDF(formData);
     console.log('✅ PDF generated successfully');
+
+    // ステップ1-2: メール添付用に「1ページ目だけ」を抽出
+    console.log('✂️  Extracting first page for email attachment...');
+    const firstPageBuffer = await extractFirstPage(pdfBuffer);
+    console.log(`✅ First page extracted (${firstPageBuffer.length} bytes)`);
 
     // ステップ2: メール送信準備
     console.log('📧 Preparing email...');
@@ -54,7 +86,7 @@ router.post('/submit', async (req, res) => {
       ccEmails.push(formData.agentInfo.email);
     }
 
-    // 代理店の連絡先メールアドレス（任意）
+    // 代理店の連絡先メールアドレス（任意：フロントの送信確認ダイアログで入力されたもの）
     if (formData.contactEmail && formData.contactEmail !== formData.agentInfo.email) {
       ccEmails.push(formData.contactEmail);
     }
@@ -75,7 +107,7 @@ router.post('/submit', async (req, res) => {
       formData.applicantName
     );
 
-    // メール送信データ
+    // メール送信データ（Resend形式）
     const emailData = {
       to: toEmail,
       cc: ccEmails,
@@ -84,10 +116,8 @@ router.post('/submit', async (req, res) => {
       html: body.replace(/\n/g, '<br>'),
       attachments: [
         {
-          content: pdfBuffer.toString('base64'),
           filename: pdfFileName,
-          type: 'application/pdf',
-          disposition: 'attachment'
+          content: firstPageBuffer // ← 1枚目だけを添付
         }
       ]
     };
@@ -99,7 +129,6 @@ router.post('/submit', async (req, res) => {
     const sendResult = await emailSender.sendEmailWithRetry(emailData, 3);
 
     if (sendResult.success) {
-      // 送信成功
       console.log('✅ Email sent successfully!');
       return res.json({
         success: true,
@@ -107,12 +136,9 @@ router.post('/submit', async (req, res) => {
         sentAt: new Date().toISOString(),
         attempts: sendResult.attempt
       });
-
     } else {
-      // 送信失敗（3回リトライ後）
       console.error('❌ Email sending failed after retries');
 
-      // エラーログに記録
       const errorId = errorLogger.logEmailError({
         errorType: sendResult.errorType,
         errorMessage: sendResult.error,
@@ -128,15 +154,12 @@ router.post('/submit', async (req, res) => {
         message: 'メール送信に失敗しました',
         attempts: sendResult.attempts,
         errorId: errorId,
-        // FAX番号を返す
         fallbackFax: '03-6240-3385'
       });
     }
-
   } catch (error) {
     console.error('❌ Error in application submission:', error);
 
-    // エラーログに記録
     errorLogger.logEmailError({
       errorType: 'SYSTEM_ERROR',
       errorMessage: error.message,
@@ -163,7 +186,7 @@ router.get('/errors', (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 100;
     const errors = errorLogger.getRecentErrors(limit);
-    
+
     res.json({
       success: true,
       count: errors.length,

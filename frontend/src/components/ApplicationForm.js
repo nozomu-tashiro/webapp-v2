@@ -315,6 +315,9 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
   const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showFaxDialog, setShowFaxDialog] = useState(false);
+  // 🆕 送信確認ダイアログ用（2026-05-18追加）
+  const [showConfirmSendDialog, setShowConfirmSendDialog] = useState(false);
+  const [additionalCcEmail, setAdditionalCcEmail] = useState('');
   
   // Accordion state for optional sections
   const [accordionState, setAccordionState] = useState({
@@ -1076,6 +1079,11 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
     handleSubmit(e);
   };
 
+  // 🆕 送信確認ダイアログを開く（2026-05-18追加）
+  const openConfirmSendDialog = () => {
+    setShowConfirmSendDialog(true);
+  };
+
   // ★ 新機能: いえらぶに送信（メール送信）
   const handleSendToIerabu = async () => {
     setSendingEmail(true);
@@ -1083,8 +1091,14 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
 
     try {
       const apiUrl = process.env.REACT_APP_API_URL || '';
-      
-      const response = await axios.post(`${apiUrl}/api/application/submit`, formData, {
+
+      // 🆕 追加CCを含めた payload を構築
+      const payload = {
+        ...formData,
+        contactEmail: additionalCcEmail || ''
+      };
+
+      const response = await axios.post(`${apiUrl}/api/application/submit`, payload, {
         timeout: 180000 // 3分タイムアウト（リトライ時間を考慮）
       });
 
@@ -1096,6 +1110,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
         // TODO: emailSent, emailSentAt, emailStatus を保存
         
         // モーダルを閉じる
+        setShowConfirmSendDialog(false);
         setShowPreviewModal(false);
         
         // 成功モーダルを表示
@@ -1110,6 +1125,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
       
       // FAX番号を表示
       setSendingEmail(false);
+      setShowConfirmSendDialog(false);
       setShowPreviewModal(false);
       setShowFaxDialog(true);
       
@@ -2133,7 +2149,7 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
               </button>
               <button 
                 className="btn-primary" 
-                onClick={handleSendToIerabu}
+                onClick={openConfirmSendDialog}
                 disabled={sendingEmail}
               >
                 {sendingEmail ? '送信中...' : 'いえらぶに送信する'}
@@ -2182,6 +2198,130 @@ const ApplicationForm = ({ editMode = false, editData = null, editingId = null, 
             <div className="modal-footer">
               <button className="btn-secondary" onClick={closeFaxDialog}>
                 閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🆕 送信確認ダイアログ（2026-05-18追加） */}
+      {showConfirmSendDialog && (
+        <div className="modal-overlay" onClick={() => !sendingEmail && setShowConfirmSendDialog(false)}>
+          <div
+            className="modal-content modal-confirm-send"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '560px' }}
+          >
+            <div className="modal-header">
+              <h2>📧 メール送信内容の確認</h2>
+              {!sendingEmail && (
+                <button
+                  className="modal-close"
+                  onClick={() => setShowConfirmSendDialog(false)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: '20px',
+                    cursor: 'pointer',
+                    color: '#666'
+                  }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+
+            <div className="modal-body" style={{ padding: '20px 24px' }}>
+              <p style={{ margin: '0 0 16px', fontSize: '14px', color: '#555' }}>
+                以下の宛先に申込書（1枚目）を送信します。内容をご確認ください。
+              </p>
+
+              <div style={{
+                background: '#f7f9fc',
+                border: '1px solid #e0e6ed',
+                borderRadius: '6px',
+                padding: '14px 16px',
+                marginBottom: '16px'
+              }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ fontSize: '12px', color: '#888', fontWeight: 600, marginBottom: '4px' }}>
+                    TO（メイン送信先）
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#333' }}>
+                    motfax-kaketsuke@ielove-partners.jp
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#888', fontWeight: 600, marginBottom: '4px' }}>
+                    CC（自動付与）
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#333', lineHeight: 1.7 }}>
+                    kaketsuke.partners@ielove-partners.jp
+                    {formData.agentInfo && formData.agentInfo.email && (
+                      <>
+                        <br />
+                        {formData.agentInfo.email}（代理店登録メール）
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  fontSize: '13px',
+                  color: '#333',
+                  fontWeight: 600,
+                  display: 'block',
+                  marginBottom: '6px'
+                }}>
+                  📧 追加でCCしたいメール（任意）
+                </label>
+                <input
+                  type="email"
+                  value={additionalCcEmail}
+                  onChange={(e) => setAdditionalCcEmail(e.target.value)}
+                  placeholder="例: yourname@ielove-partners.jp"
+                  disabled={sendingEmail}
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    fontSize: '14px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
+                  ※ ご自身の手元にも控えを残したい場合などにご利用ください
+                </div>
+              </div>
+
+              <div style={{
+                background: '#fff8e1',
+                border: '1px solid #ffe082',
+                borderRadius: '4px',
+                padding: '10px 12px',
+                fontSize: '13px'
+              }}>
+                📎 添付ファイル: <strong>申込書（1枚目）.pdf</strong>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                className="btn-secondary"
+                onClick={() => setShowConfirmSendDialog(false)}
+                disabled={sendingEmail}
+              >
+                キャンセル
+              </button>
+              <button
+                className="btn-primary"
+                onClick={handleSendToIerabu}
+                disabled={sendingEmail}
+              >
+                {sendingEmail ? '送信中...' : '✉️ この内容で送信する'}
               </button>
             </div>
           </div>
